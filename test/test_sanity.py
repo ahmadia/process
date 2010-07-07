@@ -5,7 +5,7 @@ class SanityTestCase(unittest.TestCase):
         a = 3
         b = 4
         self.assertEquals(a+b, 7)
-    def test_insanity(self):
-        a = 1
-        b = 1
-        self.assertEquals(a+b, 3)
+#    def test_insanity(self):
+#        a = 1
+#        b = 1
+#        self.assertEquals(a+b, 3)
