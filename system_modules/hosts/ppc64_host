@@ -1,0 +1,34 @@
+#%Module
+# Modulefile automagically loaded when on ppc64 hosts (shaheen.hpc.kaust.edu.sa)
+#
+# KAUST Supercomputing Laboratories
+# shaheen-help@kaust.edu.sa
+
+module-whatis   "module automatically loaded when compiling on the ppc64 front-end node"
+
+##	only ppc64 compilers are available on ppc64 platforms
+##----------------------------------------------------------------------------
+
+conflict x86_64 
+
+# sanity
+conflict x86_64_host
+
+##
+## Setup the compiler environment variable
+##----------------------------------------------------------------------------
+ 
+proc ModulesHelp { } {
+puts stderr \
+"This module is automatically loaded when you are on a BGP ppc64
+front-end node.  If you are getting conflict errors against this
+module, you should probably be compiling from an x86_64 front-end
+node (e.g. shaheenx.hpc.kaust.edu.sa).
+"
+}
+
+# The below magic is for Emacs editing convenience
+# Local Variables: 
+# mode: tcl
+# End:
+#

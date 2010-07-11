@@ -1,0 +1,65 @@
+#%Module
+#
+# Modulefile for explicitly targeting the ppc64 architecture
+#
+# KAUST Supercomputing Laboratories
+# shaheen-help@kaust.edu.sa
+
+module-whatis   "configures explicit targeting of the ppc64 (front-end node) architecture" 
+
+##	ppc64 compilers are only available on ppc64 platforms
+##----------------------------------------------------------------------------
+
+prereq ppc64_host
+
+##
+## Setup the compiler environment variable
+##----------------------------------------------------------------------------
+ 
+setenv KSL_TARGET ppc64 
+
+proc ModulesHelp { } {
+    puts stderr \
+"This module configures explicit targeting of the ppc64 (front-end node)
+architecture.
+
+If you would like to serially compile for the ppc64 front-end node, use
+the following commands:
+
+\t xlc_r   -> calls the IBM XL C compiler (Version 9.0)
+\t xlc++_r -> calls the IBM XL C++ compiler (Version 9.0)
+\t xlf_r   -> calls the IBM F77 compiler (Version 11.1)
+\t xlf90_r -> calls the IBM F90 compiler (Version 11.1)
+ 
+You may explicitly disable multithreaded support by removing the 
+_r suffix  
+ 
+WARNING: These commands will not generate executables for the 
+back-end (compute) nodes.
+ 
+NOTE: 
+Several libraries and tools you may need are installed for use on the
+front end nodes.  Modules will set up KSL_PACKAGENAME_PPC64_* variables
+in addition to KSL_PACKAGENAME_* variables for you when this module
+is loaded and the desired packages are available for the front-end.
+"
+}
+
+if [is-loaded genie] {    
+    setenv CC_PPC64 /opt/ibmcmp/vacpp/bg/9.0/bin/xlc_r
+    setenv CXX_PPC64 /opt/ibmcmp/vacpp/bg/9.0/bin/xlc_r
+    setenv FC_PPC64 /opt/ibmcmp/xlf/bg/11.1/bin/xlf90_r
+}
+
+##
+## Modify PATH environment variable 
+##----------------------------------------------------------------------------
+
+prepend-path PATH /opt/ibmcmp/vacpp/bg/9.0/bin
+prepend-path PATH /opt/ibmcmp/xlf/bg/11.1/bin
+
+# The below magic is for Emacs editing convenience
+# Local Variables: 
+# mode: tcl
+# End:
+#
