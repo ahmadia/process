@@ -6,18 +6,12 @@
 
 module-whatis   "module automatically loaded when compiling on the ppc64 front-end node"
 
-##	only ppc64 compilers are available on ppc64 platforms
-##----------------------------------------------------------------------------
-
+# only ppc64 compilers are available on ppc64 platforms
 conflict x86_64 
 
 # sanity
 conflict x86_64_host
 
-##
-## Setup the compiler environment variable
-##----------------------------------------------------------------------------
- 
 proc ModulesHelp { } {
 puts stderr \
 "This module is automatically loaded when you are on a BGP ppc64
@@ -32,3 +26,4 @@ node (e.g. shaheenx.hpc.kaust.edu.sa).
 # mode: tcl
 # End:
 #
+

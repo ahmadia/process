@@ -1,0 +1,105 @@
+#%Module
+#
+# Modulefile for the Intel suite of compilers 
+#
+# KAUST Supercomputing Laboratories
+# shaheen-help@kaust.edu.sa
+
+module-whatis   "configures usage of the Intel Compiler Suite"
+
+# Only one compiler module should be active at any time
+conflict GNU IBM 
+
+# The Intel compiler is only available on x86_64 platforms
+prereq x86_64_host
+
+proc ModulesHelp { } {
+    puts stderr \
+"This module configures usage of the Intel compiler suite (11.1)
+     
+The following commands will be available after loading this 
+module: 
+
+\t icc     -> calls the Intel C compiler
+\t icpc    -> calls the Intel C++ compiler
+\t ifort   -> calls the Intel Fortran compiler
+
+Code with MPI calls can be compiled using the following commands: 
+
+\t mpicc  -> calls the Intel C compiler with MPI support
+\t mpicxx -> calls the Intel C++ compiler with MPI support
+\t mpif77 -> calls the Intel Fortran compiler with MPI F77 support
+\t mpif90 -> calls the Intel Fortran compiler with MPI F90 support
+"
+}
+
+if [is-loaded genie] {    
+    setenv CC /opt/share/mpich2/x86_64/bin/mpicc
+    setenv CXX /opt/share/mpich2/x86_64/bin/mpicxx
+    setenv FC /opt/share/mpich2/x86_64/bin/mpif90
+}
+
+set KSL_INTEL_ROOT /opt/share/intel/Compiler/11.1/059
+    
+    set TBB21_INSTALL_DIR "$KSL_INTEL_ROOT/tbb"
+    set TBB_ARCH_PLATFORM "intel64"
+    set MKLROOT "$KSL_INTEL_ROOT/mkl"
+    set IPPROOT "$KSL_INTEL_ROOT/ipp/em64t"
+    
+    setenv NLSPATH "$KSL_INTEL_ROOT/lib/intel64/locale/%l_%t/%N:$IPPROOT/lib/locale/%l_%t/%N:${MKLROOT}/lib/em64t/locale/%l_%t/%N:$KSL_INTEL_ROOT/idb/intel64/locale/%l_%t/%N"
+    setenv CPATH "$IPPROOT/include:${MKLROOT}/include:${TBB21_INSTALL_DIR}/include"
+    
+    ##
+    ## Update some other stuff
+    ##---------------------------------------------------------------------
+    
+    append-path INCLUDE "$IPPROOT/include:${MKLROOT}/include"
+    append-path FPATH "${MKLROOT}/include"
+    append-path LIB "$IPPROOT/lib"
+    
+    ##
+    ## Set the location of the INTEL license file(s)
+    ##---------------------------------------------------------------------
+    
+    ##setenv INTEL_LICENSE_FILE "/opt/share/intel/licenses"
+    setenv INTEL_LICENSE_FILE "28518@10.254.1.90"
+    ##setenv INTEL_LICENSE_FILE "28518@10.126.74.110"
+    ##
+    ## Update the MANPATH environment variable 
+    ##---------------------------------------------------------------------
+    
+    append-path MANPATH "/opt/share/intel/Compiler/11.1/059/man/en_US:${MKLROOT}/man/en_US"
+    
+    ##
+    ## Update the library search directories 
+    ##---------------------------------------------------------------------
+    
+    append-path LIBRARY_PATH "/opt/share/intel/Compiler/11.1/059/lib/intel64:$IPPROOT/lib:${MKLROOT}/lib/em64t:${TBB21_INSTALL_DIR}/lib/${TBB_ARCH_PLATFORM}"
+    
+    append-path LD_LIBRARY_PATH "/opt/share/intel/Compiler/11.1/059/lib/intel64:$IPPROOT/sharedlib:${MKLROOT}/lib/em64t:${TBB21_INSTALL_DIR}/lib/${TBB_ARCH_PLATFORM}"
+    append-path DYLD_LIBRARY_PATH "${TBB21_INSTALL_DIR}/lib/${TBB_ARCH_PLATFORM}"
+    
+    ##
+    ## Update the PATH variable
+    ##---------------------------------------------------------------------
+    
+    append-path PATH "/opt/share/intel/Compiler/11.1/059/bin/intel64"
+    
+    
+    ##
+    ## Construct the settings for the MPICH2 bindings 
+    ##---------------------------------------------------------------------
+    
+    append-path PATH /opt/share/mpich2/[uname machine]/INTEL/bin
+    setenv KSL_MPICH2_INC -I/opt/share/mpich2/[uname machine]/INTEL/include
+    setenv KSL_MPICH2_LIB "-L/opt/share/mpich2/[uname machine]/INTEL/lib -lmpichf90 -lfmpich -lmpich"
+    setenv CC icc 
+
+prepend-path PATH /bgsys/drivers/ppcfloor/comm/bin
+setenv KSL_COMPILER IBM 
+
+# The below magic is for Emacs editing convenience
+# Local Variables: 
+# mode: tcl
+# End:
+#

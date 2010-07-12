@@ -7,23 +7,11 @@
 
 module-whatis   "configures usage of the IBM XL Compiler Suite"
 
-##
-##	Only one compiler module should be active at any time
-##----------------------------------------------------------------------------
+# Only one compiler module should be active at any time
+conflict gnu intel
 
-conflict GNU INTEL 
-
-##
-##	The IBM compiler is only available on ppc64 platforms
-##----------------------------------------------------------------------------
-
+# The IBM compiler is only available on ppc64 platforms
 prereq ppc64_host
-
-##
-## Setup the compiler environment variable
-##----------------------------------------------------------------------------
-
-setenv KSL_COMPILER IBM 
 
 proc ModulesHelp { } {
     puts stderr \
@@ -54,11 +42,8 @@ if [is-loaded genie] {
     setenv FC /bgsys/drivers/ppcfloor/comm/bin/mpixlf90_r
 }
 
-##
-## Modify PATH environment variable 
-##----------------------------------------------------------------------------
-   
 prepend-path PATH /bgsys/drivers/ppcfloor/comm/bin
+setenv KSL_COMPILER ibm
 
 # The below magic is for Emacs editing convenience
 # Local Variables: 
