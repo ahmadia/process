@@ -7,7 +7,7 @@
 module-whatis   "module automatically loaded when compiling on the ppc64 front-end node"
 
 # only ppc64 compilers are available on ppc64 platforms
-conflict x86_64 
+conflict x86_64_target
 
 # sanity
 conflict x86_64_host
