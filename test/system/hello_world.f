@@ -1,0 +1,4 @@
+      PROGRAM HELLOW
+      WRITE(UNIT=*, FMT=*) 'HELLO WORLD'
+      END
+ 

@@ -19,7 +19,7 @@ proc ModulesHelp { } {
      
 The following compiler commands include the necessary include
 and linking references to the MPI library so that MPI-enabled
-binaries can be compiled and linked:
+binaries can be compiled and linked for use on x86_64 nodes:
  
 \t mpicc  -> calls the GNU C   compiler with MPI
 \t mpicxx -> calls the GNU C++ compiler with MPI
