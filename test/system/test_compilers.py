@@ -14,8 +14,8 @@ def get_there():
     os.chdir(test_path)
     if not os.path.exists('./build'):
         os.mkdir('./build')
-    load_module('ppc64_host')
-    load_module('genie')
+    module_cmd('load ppc64_host')
+    module_cmd('load genie')
 
 def clean_it():
     if os.path.exists('./build'):
@@ -36,40 +36,43 @@ def test_compilers():
                 yield check_build_and_verify, module, compiler, source, target, expected_output
                       
 def check_build_and_verify(module, compiler, source, target, expected_output):
-    build_command = "module load %s && %s -o ./build/%s %s" % (module, compiler, target, source)
+    module_cmd('load %s' % module)
+    build_command = "%s -o ./build/%s %s" % (compiler, target, source)
     build_info = "[target: %s, compiler: %s, (module: %s), source: %s]" % (target, compiler, module, source)
     build_it(build_info, build_command)
     run_command = "kslrun -n 1 ./build/%s" % (target)
     verify_it(run_command, build_info, expected_output)
-    unload_module(module)
+    module_cmd("unload %s" % module)
 
 
-def load_module(module):
-    rc = subprocess.call('module load %s' % module, shell=True)
+def module_cmd(module_args):
+    p = subprocess.Popen('/opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd python %s' % module_args,
+                         shell=True, stdout=subprocess.PIPE ,stderr=subprocess.STDOUT)
+    (commands, ignore) = p.communicate()
+    rc = p.returncode
+
     if rc is not None and rc % 256:
-        raise BuildError("unexpected failure loading module")
+        err = "Error issuing module command %s\n" % (module_args)
+        sys.stderr.write(commands)
+        raise BuildError("unexpected failure issuing module command: %s" % module_args)
 
-def unload_module(module):
-    rc = subprocess.call('module unload %s' % module, shell=True)
-    if rc is not None and rc % 256:
-        raise BuildError("unexpected failure unloading module")
+    exec commands
 
 def build_it(build_info, build_command):
 
-    p = subprocess.Popen(build_command, shell=True, stdout=subprocess.PIPE ,stderr=subprocess.STDOUT)
+    p = subprocess.Popen(build_command, executable='/bin/bash',shell=True, stdout=subprocess.PIPE ,stderr=subprocess.STDOUT)
     (stdout_data, ignore) = p.communicate()
     rc = p.returncode
-
-    err = "Error building %s\n" % (build_info)
     
     if rc is not None and rc % 256:
+        err = "Error building %s\n" % (build_info)
         sys.stderr.write(err)
         sys.stderr.write(build_command)
         sys.stderr.write(stdout_data)
         raise BuildError(err)
  
 def verify_it(run_command, build_info, expected_output):
-    p = subprocess.Popen(run_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(run_command, executable='/bin/bash', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (actual_output, stderr_data) = p.communicate()
     rc = p.returncode
     if rc is not None and rc % 256:
