@@ -40,6 +40,8 @@ if [is-loaded genie] {
     setenv CC /bgsys/drivers/ppcfloor/comm/bin/mpixlc_r
     setenv CXX /bgsys/drivers/ppcfloor/comm/bin/mpixlcxx_r
     setenv FC /bgsys/drivers/ppcfloor/comm/bin/mpixlf90_r
+    setenv F77 /bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r
+    setenv F90 /bgsys/drivers/ppcfloor/comm/bin/mpixlf90_r
 }
 
 prepend-path PATH /bgsys/drivers/ppcfloor/comm/bin

@@ -58,6 +58,8 @@ if [is-loaded x86_64_host] {
 	setenv CC /opt/share/mpich2/x86_64/GNU/bin/mpicc
 	setenv CXX /opt/share/mpich2/x86_64/GNU/bin/mpicxx
 	setenv FC /opt/share/mpich2/x86_64/GNU/bin/mpif90
+	setenv F77 /opt/share/mpich2/x86_64/GNU/bin/mpif77
+	setenv F90 /opt/share/mpich2/x86_64/GNU/bin/mpif90
     }
 }
 
@@ -69,6 +71,8 @@ if [is-loaded ppc64_host] {
 	setenv CC /bgsys/drivers/ppcfloor/comm/bin/mpicc
 	setenv CXX /bgsys/drivers/ppcfloor/comm/bin/mpicxx
 	setenv FC /bgsys/drivers/ppcfloor/comm/bin/mpif90
+	setenv F77 /bgsys/drivers/ppcfloor/comm/bin/mpif77
+	setenv F90 /bgsys/drivers/ppcfloor/comm/bin/mpif90
     }
 }
 

@@ -37,6 +37,8 @@ if [is-loaded genie] {
     setenv CC /opt/share/mpich2/x86_64/bin/mpicc
     setenv CXX /opt/share/mpich2/x86_64/bin/mpicxx
     setenv FC /opt/share/mpich2/x86_64/bin/mpif90
+    setenv F77 /opt/share/mpich2/x86_64/bin/mpif77
+    setenv F90 /opt/share/mpich2/x86_64/bin/mpif90
 }
 
 set KSL_INTEL_ROOT /opt/share/intel/Compiler/11.1/059

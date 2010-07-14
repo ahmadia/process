@@ -1,5 +1,5 @@
 PROGRAM HelloWorld
-   PRINT *, "HELLO WORLD"
+   PRINT *, "hello world"
 END PROGRAM HelloWorld 
  
  

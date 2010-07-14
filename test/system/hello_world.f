@@ -1,4 +1,4 @@
       PROGRAM HELLOW
-      WRITE(UNIT=*, FMT=*) 'HELLO WORLD'
+      WRITE(UNIT=*, FMT=*) 'hello world'
       END
  
