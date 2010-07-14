@@ -14,6 +14,8 @@ def get_there():
     os.chdir(test_path)
     if not os.path.exists('./build'):
         os.mkdir('./build')
+    load_module('ppc64_host')
+    load_module('genie')
 
 def clean_it():
     if os.path.exists('./build'):
@@ -40,6 +42,12 @@ def check_build_and_verify(module, compiler, source, target, expected_output):
     run_command = "kslrun -n 1 ./build/%s" % (target)
     verify_it(run_command, build_info, expected_output)
     unload_module(module)
+
+
+def load_module(module):
+    rc = subprocess.call('module load %s' % module, shell=True)
+    if rc is not None and rc % 256:
+        raise BuildError("unexpected failure loading module")
 
 def unload_module(module):
     rc = subprocess.call('module unload %s' % module, shell=True)
