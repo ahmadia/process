@@ -37,14 +37,14 @@ node targets.
 }
 
 if [is-loaded genie] {    
-    setenv CC /bgsys/drivers/ppcfloor/comm/bin/mpixlc_r
-    setenv CXX /bgsys/drivers/ppcfloor/comm/bin/mpixlcxx_r
-    setenv FC /bgsys/drivers/ppcfloor/comm/bin/mpixlf90_r
-    setenv F77 /bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r
-    setenv F90 /bgsys/drivers/ppcfloor/comm/bin/mpixlf90_r
+    setenv CC /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlc_r
+    setenv CXX /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlcxx_r
+    setenv FC /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlf90_r
+    setenv F77 /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlf77_r
+    setenv F90 /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlf90_r
 }
 
-prepend-path PATH /bgsys/drivers/ppcfloor/comm/bin
+prepend-path PATH /bgsys/drivers/ppcfloor/comm/xl/bin/
 setenv KSL_COMPILER ibm
 
 # The below magic is for Emacs editing convenience

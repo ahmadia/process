@@ -25,24 +25,27 @@ def clean_it():
 @nose.with_setup(get_there, clean_it)
 def test_compilers():
     for module in ('ibm','gnu'):
-        for test, expected_output in [('hello_world', 'hello world')]:
+        for test, np, expected_output in [('hello_world', 1, 'hello world'),
+                                          ('hello_world_mpi', 128, '128.0: hello world')]:
             for ext, compiler in [('c', '${CC}'),
                                   ('cpp', '${CXX}'),
                                   ('f', '${FC}'),
                                   ('f90', '${F90}')]:
                 source = test+'.'+ext
                 target = test+'_'+ext+'.exe'
-                expected_output = 'hello world'
-                yield check_build_and_verify, module, compiler, source, target, expected_output
+                yield check_build_and_verify, module, compiler, source, target, np, expected_output
                       
-def check_build_and_verify(module, compiler, source, target, expected_output):
+def check_build_and_verify(module, compiler, source, target, np, expected_output):
+    # somebody smarter than me can figure out how to pull the module loads/unloads into fixtures
     module_cmd('load %s' % module)
-    build_command = "%s -o ./build/%s %s" % (compiler, target, source)
-    build_info = "[target: %s, compiler: %s, (module: %s), source: %s]" % (target, compiler, module, source)
-    build_it(build_info, build_command)
-    run_command = "kslrun -n 1 ./build/%s" % (target)
-    verify_it(run_command, build_info, expected_output)
-    module_cmd("unload %s" % module)
+    try:    
+        build_command = "%s -o ./build/%s %s" % (compiler, target, source)
+        build_info = "[target: %s, compiler: %s, (module: %s), source: %s]" % (target, compiler, module, source)
+        build_it(build_info, build_command)
+        run_command = "kslrun -n %d ./build/%s" % (np, target)
+        verify_it(run_command, build_info, expected_output)
+    finally:
+        module_cmd("unload %s" % module)
 
 
 def module_cmd(module_args):
