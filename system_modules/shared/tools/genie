@@ -1,0 +1,32 @@
+#%Module
+#
+# Modulefile for operating in "genie-mode"
+#
+# KAUST Supercomputing Laboratories
+# shaheen-help@kaust.edu.sa
+
+module-whatis "enables genie-mode (aggressive environment variable management)" 
+
+setenv KSL_GENIE_MODE true 
+
+proc ModulesHelp { } {
+    puts stderr \
+"This module enables genie-mode (aggressive environment management).
+
+When this module is loaded, the module command will attempt to
+manipulate very common variable names such as CFLAGS, CXXFLAGS,
+LDFLAGS so that system tools like autoconf and make have a better
+chance at correctly compiling your code.
+
+WARNING: This module is experimental and, although it attempts to make
+your life easier, it will probably fail in spectacular and
+unpredictable ways.  Use at your own peril.
+
+And don't say we didn't warn you."
+}
+
+# The below magic is for Emacs editing convenience
+# Local Variables: 
+# mode: tcl
+# End:
+# 

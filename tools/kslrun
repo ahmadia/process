@@ -1,0 +1,182 @@
+#!/usr/bin/env python
+
+import os
+import re
+import sys
+import select
+import subprocess
+import logging
+from optparse import OptionParser
+import time
+import string
+
+def main():
+    parser = OptionParser()
+    parser.add_option("-v", "--verbose",
+                      action="store_true", dest="verbose", default=False,
+                      help="print informational status messages to stdout")
+    parser.add_option("-p", "--partition_size",
+                      action="store", dest="partition_size", default=128,
+                      help="size of the BGP partition to request")
+    parser.add_option("-n", "--np",
+                      action="store", dest="np", default=1,
+                      help="number of MPI processes to request")
+    parser.add_option("-d", "--debug",
+                      action="store_true", dest="debug", default=False)
+    parser.add_option("-a", "--account",
+                      action="store", dest="account_no", default="k01",
+                      help="account number to use (defaults to k01)")
+
+    (options, args) = parser.parse_args()
+
+    if options.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s %(levelname)s %(message)s')
+    elif options.verbose:
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s %(levelname)s %(message)s')
+    else:
+        logging.basicConfig(level=logging.WARNING,
+                            format='%(asctime)s %(levelname)s %(message)s')
+
+    logger = logging.getLogger('ksl_srun')
+
+    logger.info("attempting to delete old pipes")
+    for file in "./job_out", "./job_err", "./job_done":
+        try:
+            os.remove(file)
+        except:
+            pass
+            
+    logger.info("setting up job_out/job_err named pipes")
+    pipe_out = os.mkfifo("./job_out")
+    pipe_err = os.mkfifo("./job_err")
+
+    job_out_pipe = os.open('job_out', (os.O_RDONLY|os.O_NONBLOCK))
+    job_err_pipe = os.open('job_err', (os.O_RDONLY|os.O_NONBLOCK))
+    time.sleep(1) #loadleveler is a piece of shit
+
+    logger.info("setting up LoadLeveler submission script")
+    llfilename = setup_ll_file(options, args)
+    logger.info("submitting to LoadLeveler")
+    (llout, llerr) = call_command("llsubmit " + llfilename)
+    logger.info(llout)
+#    if len(llerr):
+        # silent ignore currently
+#        logger.error(llerr)
+    
+    longllqid = llout.split(' ')[1]
+    assert 'fen1-a.shaheen.kaust.edu.sa' in longllqid, "Unable to determine llq job id from output, %s" % llout
+    llqid = longllqid.replace("shaheen.kaust.edu.sa.","") + ".0"
+    #    logger.info("Watching job %s" % llqid)
+    logger.info("Watching for job_done file")
+    logger.info("following job_out/job_err named pipes")
+    job_poll = select.poll()
+    job_poll.register(job_out_pipe)
+    job_poll.register(job_err_pipe)
+
+    watch_pipes(job_poll, job_out_pipe, job_err_pipe, llqid)
+
+    logger.info("deleting old pipes")
+
+    if options.debug:
+        logger.debug("not deleting old pipes/job command file")
+    else:
+        logger.info("attempting to delete old pipes and submission script")
+        for file in "./job_out", "./job_err", "./job_done", llfilename:
+            try:
+                os.remove(file)
+            except:
+                pass
+
+
+def watch_pipes(job_poll, job_out_pipe, job_err_pipe, llqid):
+    logger = logging.getLogger('ksl_srun')
+    while True:  # see return condition in hangup check        
+        # handle any output
+        handle_output(job_poll, job_out_pipe, job_err_pipe)
+
+        # now check for hangup
+        if check_hangup(llqid):
+            logger.info("Received a Hang-Up")
+            # handle any output before returning, but give file system a chance to clear named pipes
+            time.sleep(5)
+            handle_output(job_poll, job_out_pipe, job_err_pipe)
+            return
+
+def handle_output(job_poll, job_out_pipe, job_err_pipe):
+    # timeout every 2s to check for hangup from llq
+    time.sleep(1)
+    active_pipes = job_poll.poll(1000)
+    for fileid, mask in active_pipes:
+        if job_out_pipe is fileid:
+            while True:
+                try:
+                    buf = os.read(job_out_pipe,1024)
+                    if len(buf)==0:
+                        break
+                    sys.stdout.write(buf)
+                except:
+                    time.sleep(1)
+        if job_err_pipe is fileid:
+            while True:
+                try:
+                    buf = os.read(job_err_pipe,1024)
+                    if len(buf)==0:
+                        break
+                    sys.stderr.write(buf)
+                except:
+                    time.sleep(1)
+
+        
+
+def setup_ll_file(options, args):
+    s = string.Template('''#!/usr/bin/env bash
+#
+# @ job_name            = test_job
+# @ job_type            = bluegene
+# @ output              = job_out
+# @ error               = job_err
+# @ environment         = COPY_ALL;
+# @ wall_clock_limit    = 20:00,20:00
+# @ notification        = always
+# @ bg_size             = ${partition_size}
+# @ cluster_list        = bgp
+# @ class               = development
+# @ bg_connection       = prefer_torus
+# @ account_no          = ${account_no}
+
+# @ queue
+
+/bgsys/drivers/ppcfloor/bin/mpirun -np ${np} ${command}
+touch job_done
+''')
+    logger = logging.getLogger('ksl_srun')
+    llfilename = "ksl_submit.ll"
+    llfile = open(llfilename, 'w')
+    llfile_contents = s.substitute(partition_size = options.partition_size, account_no= options.account_no,
+                                   np=options.np, command=string.join(args))
+    llfile.write(llfile_contents)
+    logger.debug(llfile_contents)
+    logger.debug("written to ksl_submit.ll")
+    llfile.close()
+
+    return llfilename
+
+def check_hangup(llqid):
+    logger = logging.getLogger('ksl_srun')
+    logger.debug("checking for hangup...")
+    return os.path.exists('./job_done')
+
+def call_command(command):
+    process = subprocess.Popen(command.split(' '),
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    return process.communicate()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except:
+        print """There was some sort of error running the script
+Please report to Aron Ahmadia <aron.ahmadia@kaust.edu.sa>"""
