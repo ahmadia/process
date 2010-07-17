@@ -97,8 +97,7 @@ set KSL_INTEL_ROOT /opt/share/intel/Compiler/11.1/059
     setenv KSL_MPICH2_LIB "-L/opt/share/mpich2/[uname machine]/INTEL/lib -lmpichf90 -lfmpich -lmpich"
     setenv CC icc 
 
-prepend-path PATH /bgsys/drivers/ppcfloor/comm/bin
-setenv KSL_COMPILER IBM 
+setenv KSL_COMPILER intel
 
 # The below magic is for Emacs editing convenience
 # Local Variables: 

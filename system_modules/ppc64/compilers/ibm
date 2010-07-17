@@ -44,6 +44,12 @@ if [is-loaded genie] {
     setenv F90 /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlf90_r
 }
 
+setenv KSL_CC /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlc_r
+setenv KSL_CXX /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlcxx_r
+setenv KSL_FC /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlf90_r
+setenv KSL_F77 /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlf77_r
+setenv KSL_F90 /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlf90_r
+
 prepend-path PATH /bgsys/drivers/ppcfloor/comm/xl/bin/
 setenv KSL_COMPILER ibm
 
