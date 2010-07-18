@@ -9,34 +9,116 @@ import logging
 from optparse import OptionParser
 import time
 import string
+from ksl.install.installer import installer
 
 def main():
+    (options, args) = get_options()
+    setup_paths(options)
+    setup_logs(options)
+    installer_variants = parse_install_file(options, args)
+    for variant in installer_variants:
+        variant_logs = setup_package_logs(variant)
+        variant.install()
+        close_logs(variant_logs)
+        
+def get_options():
     parser = OptionParser()
-    parser.add_option("-v", "--verbose",
-                      action="store_true", dest="verbose", default=False,
-                      help="print informational status messages to stdout")
-    parser.add_option("-d", "--debug",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option("-q", "--quiet",
+                      action="store_false", dest="verbose", default=False,
+                      help="silence informational status messages")
     parser.add_option("-r", "--root",
                       action="store", dest="root", default="/opt/share/ksl",
                       help="root directory to install to (default: /opt/share/ksl)")
+    parser.add_option("-s", "--source_paths",
+                      action="store", dest="source_paths",
+                      default="/opt/share/ksl/system/sources",
+                      help="source paths to search " +\
+                      "(default: /opt/share/ksl/systems/sources)")
+    parser.add_option("-p", "--patch_paths",
+                      action="store", dest="patch_paths",
+                      default="/opt/share/ksl/system/patches",
+                      help="patch paths to search " +\
+                      "(default: /opt/share/ksl/systems/patches)")
+    parser.add_option("-b", "--build_dir",
+                      action="store", dest="build_dir", default="./kslbuild",
+                      help="working build directory (default: ./klsbuild)")
+    parser.add_option("-m", "--module_cmd",
+                      action="store", dest="module_cmd",
+                      default="/opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd",
+                      help="module command " + \
+                      "(default: /opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd)")
 
     (options, args) = parser.parse_args()
+    return (options, args)
 
-    if options.debug:
-        logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s %(levelname)s %(message)s')
-    elif options.verbose:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s %(levelname)s %(message)s')
+def setup_basic_logs(options):
+    logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%m-%d %H:%M',
+                    filename='/opt/share/ksl/system/logs/ksl_installer.log',
+                    filemode='a')
+
+    # ten backup files at 100MB for a total of ~1GB potential logs 
+    syslog = logging.handlers.RotatingFileHandler('/opt/share/ksl/system/logs/ksl_install.log',
+                                                  mode='a',
+                                                  maxBytes=104857600,
+                                                  backupCount=10)
+    syslog.setLevel(logging.DEBUG)
+    syslogf = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    syslog.setFormatter(syslogf)
+    
+    logging.getLogger('ksl.installer').addHandler(syslog)
+
+    console = logging.StreamHandler()
+    formatter = logging.Formatter('%(message)s')
+    console.setFormatter(formatter)
+    
+    if options.verbose:
+        console.setLevel(logging.INFO)
     else:
-        logging.basicConfig(level=logging.WARNING,
-                            format='%(asctime)s %(levelname)s %(message)s')
+        console.setLevel(logging.WARNING)
+    logging.getLogger('ksl.installer').addHandler(console)
 
-    logger = logging.getLogger('ksl_install')
+def setup_package_logs(variant):
+    root = '/opt/share/ksl/system/logs/installs'
+    prefix = variant.name+'-'+variant.version+'-'+variant.release+'_'+variant.variant_id
+    plog = logging.FileHandler(join(root,prefix+'_install.log'),'w')
+    logging.getLogger('ksl.installer.package').addHandler(plog)
 
-    logger.info("attempting to delete old pipes")
+    configurelog = logging.FileHandler(join(root,prefix+'_configure.log'),'w')
+    configurelog.propagate=False
+    logging.getLogger('ksl.installer.package.configure').addHandler(configurelog)
 
+    patchlog = logging.FileHandler(join(root,prefix+'_patch.log'),'w')
+    patchlog.propagate=False
+    logging.getLogger('ksl.installer.package.patch').addHandler(patchlog)
+
+    makelog = logging.FileHandler(join(root,prefix+'_make.log'),'w')
+    makelog.propagate=False
+    logging.getLogger('ksl.installer.package.make').addHandler(makelog)
+
+    return [(plog, 'ksl.installer.package'),
+            (configurelog, 'ksl.installer.package.configure'),
+            (patchlog, 'ksl.installer.package.patch'),
+            (makelog, 'ksl.installer.package.make')]
+
+def close_logs(logs):
+    for handle, logname in logs:
+        handle.flush()
+        handle.close()
+        logging.getLogger(logname).removeHandler(handle)
+    return
+
+def parse_install_file(options, args):
+    execfile(*args)
+    for variant in variants:
+        variant.root = options.root
+        variant.source_paths = options.source_paths
+        variant.patch_paths = options.patch_paths
+        variant.build_dir = options.build_dir
+        variant.module_cmd = options.module_cmd
+    return variants
+    
 if __name__ == "__main__":
     try:
         main()
@@ -45,3 +127,4 @@ if __name__ == "__main__":
 """There was some sort of error running the script
 Please report to Aron Ahmadia <aron.ahmadia@kaust.edu.sa>"""
         raise
+

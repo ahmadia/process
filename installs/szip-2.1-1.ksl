@@ -1,19 +1,21 @@
 # -*- python -*-
 # SZip installation file, KSL supercomputing team
-from ksl.install.steps import *
+from ksl.install.installer import *
 
-base = {}
-base['name']='szip'
-base['version']='2.1'
-base['release']='1'
-base['license']='non-commercial, see http://www.hdfgroup.org/doc_resource/SZIP/Commercial_szip.html'
-base['vendor']='ICs, LLC'
-base['url']='http://www.hdfgroup.org/doc_resource/SZIP/'
-base['summary']=' Szip Science Data Lossless Compression Program'
-base['packager']='aron'
-base['source']='szip-2.1.tar.gz'
-base['category']='utilities'
-base['description']=\
+base = installer()
+variants = {}
+
+base.name='szip'
+base.version='2.1'
+base.release='1'
+base.license='non-commercial, see http://www.hdfgroup.org/doc_resource/SZIP/Commercial_szip.html'
+base.vendor='ICs, LLC'
+base.url='http://www.hdfgroup.org/doc_resource/SZIP/'
+base.summary=' Szip Science Data Lossless Compression Program'
+base.packager='aron'
+base.source='szip-2.1.tar.gz'
+base.category='utilities'
+base.description=\
 'Szip Science Data Lossless Compression Program
 
 Szip is an implementation of the extended-Rice lossless compression
@@ -25,40 +27,40 @@ Observatory System (EOS). It was originally developed at University of
 New Mexico (UNM) and integrated with HDF4 by UNM researchers and
 developers.'
 
-base['libs']=('./lib/libszip','libstuff')
-base['bin']=('./bin/szip')
+base.libs=('./lib/libszip','libstuff')
+base.bin=('./bin/szip')
 
 step0 = load_modules
 step1 = unpack_source
 step2 = configure
-step3 = apply_mod,'szip_libtool'
+step3 = apply_patch,'szip_libtool'
 step4 = make
-step5 = makeinstall
+step5 = make_install
 
-base_ppc64['install_steps'] = (step0, step1, step2, step3, step4, step5)
-base_x86_64['install_steps'] = (step0, step1, step2, step4, step5)
+base_ppc64.install_steps = (step0, step1, step2, step3, step4, step5)
+base_x86_64.install_steps = (step0, step1, step2, step4, step5)
 
 ppc450d_gnu = base_ppc64
-ppc450d['target_host'] = 'ppc64'
-ppc450d['modules'] = ('ibm')
-ppc450d['target_arch'] = 'ppc450d'
+ppc450d.target_host = 'ppc64'
+ppc450d.modules = ('ibm')
+ppc450d.target_arch = 'ppc450d'
 variants['ppc450d'] = ppc450d
 
 ppc450d_gnu = base_ppc64
-ppc450d_gnu['target_host'] = 'ppc64'
-ppc450d_gnu['modules'] = ('gnu')
-ppc450d_gnu['target_arch'] = 'ppc450d'
+ppc450d_gnu.target_host = 'ppc64'
+ppc450d_gnu.modules = ('gnu')
+ppc450d_gnu.target_arch = 'ppc450d'
 variants['ppc450d-gnu'] = ppc450d_gnu
 
 x86_64 = base_x86_64
-x86_64['target_host'] = 'x86_64'
-x86_64['modules'] = ('gnu')
-x86_64['target_arch'] = 'x86_64'
+x86_64.target_host = 'x86_64'
+x86_64.modules = ('gnu')
+x86_64.target_arch = 'x86_64'
 variants['x86_64'] = x86_64
 
 x86_64_intel = base_x86_64
-x86_64_intel['target_host'] = 'x86_64'
-x86_64_intel['modules'] = ('intel')
-x86_64_intel['target_arch'] = 'x86_64'
+x86_64_intel.target_host = 'x86_64'
+x86_64_intel.modules = ('intel')
+x86_64_intel.target_arch = 'x86_64'
 variants['x86_64-intel'] = x86_64_intel
 
