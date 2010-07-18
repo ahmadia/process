@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 
 import os
-import re
-import sys
-import select
+from os import makedirs
+from shutil import rmtree
 import subprocess
 import logging
+import logging.handlers
 from optparse import OptionParser
-import time
 import string
 from ksl.install.installer import installer
 
 def main():
     (options, args) = get_options()
-    setup_paths(options)
-    setup_logs(options)
+    setup_installer_log(options)
     installer_variants = parse_install_file(options, args)
     for variant in installer_variants:
+        setup_target_dir(variant, options)
         variant_logs = setup_package_logs(variant)
         variant.install()
         close_logs(variant_logs)
@@ -26,6 +25,9 @@ def get_options():
     parser.add_option("-q", "--quiet",
                       action="store_false", dest="verbose", default=False,
                       help="silence informational status messages")
+    parser.add_option("-f", "--force",
+                      action="store_true", dest="force", default=False,
+                      help="clobber target directories and files")
     parser.add_option("-r", "--root",
                       action="store", dest="root", default="/opt/share/ksl",
                       help="root directory to install to (default: /opt/share/ksl)")
@@ -49,9 +51,12 @@ def get_options():
                       "(default: /opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd)")
 
     (options, args) = parser.parse_args()
+
+    if not args:
+        raise Exception("You forget to specify an install file!")
     return (options, args)
 
-def setup_basic_logs(options):
+def setup_installer_log(options):
     logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M',
@@ -78,6 +83,24 @@ def setup_basic_logs(options):
     else:
         console.setLevel(logging.WARNING)
     logging.getLogger('ksl.installer').addHandler(console)
+
+def setup_target_dir(variant, options):
+    variant.target_dir = join(
+        variant.root,variant.name,variant.version,variant.variant_id)
+    
+    if os.path.exists(variant.target_dir):
+        if not options.force:
+            confirmation = raw_input(
+                "Can I clobber target directory %s? [y/n]: " % variant.target_dir)
+            
+            if confirmation is not 'y':
+                raise Exception(
+                    "unwilling to clobber target directory %s" % variant.target_dir)
+            
+        rmtree(variant.target_dir)
+
+    makedirs(variant.target_dir)
+
 
 def setup_package_logs(variant):
     root = '/opt/share/ksl/system/logs/installs'
@@ -110,13 +133,17 @@ def close_logs(logs):
     return
 
 def parse_install_file(options, args):
-    execfile(*args)
+    installfile = string.join(args)
+    if not os.path.exists(installfile):
+        raise Exception("couldn't locate install file: %s" % installfile)
+    execfile(installfile,globals())
     for variant in variants:
         variant.root = options.root
         variant.source_paths = options.source_paths
         variant.patch_paths = options.patch_paths
         variant.build_dir = options.build_dir
         variant.module_cmd = options.module_cmd
+
     return variants
     
 if __name__ == "__main__":
