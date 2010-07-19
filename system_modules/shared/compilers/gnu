@@ -48,8 +48,6 @@ node targets.
     
 }
 
-setenv KSL_COMPILER gnu 
-
 if [is-loaded x86_64_host] {
 
     prepend-path PATH /opt/share/mpich2/x86_64/GNU/bin

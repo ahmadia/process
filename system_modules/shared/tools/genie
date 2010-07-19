@@ -7,8 +7,6 @@
 
 module-whatis "enables genie-mode (aggressive environment variable management)" 
 
-setenv KSL_GENIE_MODE true 
-
 proc ModulesHelp { } {
     puts stderr \
 "This module enables genie-mode (aggressive environment management).
@@ -16,7 +14,8 @@ proc ModulesHelp { } {
 When this module is loaded, the module command will attempt to
 manipulate very common variable names such as CFLAGS, CXXFLAGS,
 LDFLAGS so that system tools like autoconf and make have a better
-chance at correctly compiling your code.
+chance at correctly compiling your code.  You must load this BEFORE
+any other modules.
 
 WARNING: This module is experimental and, although it attempts to make
 your life easier, it will probably fail in spectacular and

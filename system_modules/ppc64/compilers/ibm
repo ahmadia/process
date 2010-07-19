@@ -51,7 +51,6 @@ setenv KSL_F77 /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlf77_r
 setenv KSL_F90 /bgsys/drivers/ppcfloor/comm/xl/bin/mpixlf90_r
 
 prepend-path PATH /bgsys/drivers/ppcfloor/comm/xl/bin/
-setenv KSL_COMPILER ibm
 
 # The below magic is for Emacs editing convenience
 # Local Variables: 

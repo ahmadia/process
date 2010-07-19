@@ -12,6 +12,7 @@ class installer:
         if data is not None:
             self = buildFromData(self,data)
         self.log = logging.getLogger('ksl.installer.package')
+        self.modulesLoaded = False
 
     def install(self):
         self.log.info('beginning installation')
@@ -22,7 +23,20 @@ class installer:
                 step(self)
             else:
                 step_fun = step[0]
-                step_fun(self,*step[1,:])
+                step_fun(self,*step[1:])
+
+        if self.modulesLoaded:
+            self.unload_modules()
+        
+    def unload_modules(self):
+        self.log.info("unloading module: genie")
+
+        self.module('unload genie')
+        
+        for module in self.modules:
+            self.log.info("unloading module: %s" % module)
+            self.module("unload %s" % module)
+
     def load_modules(self):
         # always load genie when using modules to get common environment variables
         self.log.info("loading module: genie")
@@ -32,6 +46,7 @@ class installer:
         for module in self.modules:
             self.log.info("loading module: %s" % module)
             self.module("load %s" % module)
+        self.modulesLoaded = True
     
     def unpack_source(self):
         archive_name = self.source
@@ -52,7 +67,7 @@ class installer:
     
     def apply_patch(self, patch_name):
         patch = self.find_file(patch_name, self.patch_paths)
-        self.shell_command('patch -p1 -i %s' % (patch), 'patch')
+        self.shell_command('patch --verbose -p1 -i %s' % (patch), 'patch')
     
     def make(self):
         self.shell_command('make', 'make')

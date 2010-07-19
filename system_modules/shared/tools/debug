@@ -1,0 +1,39 @@
+#%Module
+#
+# Modulefile for operating in "debug-mode"
+#
+# KAUST Supercomputing Laboratories
+# shaheen-help@kaust.edu.sa
+
+module-whatis "enables debug-mode (load debug versions of available modules)"
+
+proc ModulesHelp { } {
+    puts stderr \
+"This module enables debug-mode (load debug versions of available modules)
+
+When this module is loaded, the module command will attempt to always
+load debugging versions of libraries and enable compiler flags that
+will assist you in debugging.
+
+"
+}
+
+if [is-loaded genie] {   
+    setenv CFLAGS   "$::env(CFLAGS) -g"
+    setenv CXXFLAGS "$::env(CXXFLAGS) -g"
+    setenv FFLAGS   "$::env(FFLAGS) -g"
+    setenv F77FLAGS "$::env(F77FLAGS) -g"
+    setenv F90FLAGS "$::env(F90FLAGS) -g"
+}
+
+setenv KSL_CFLAGS   "$::env(KSL_CFLAGS) -g"
+setenv KSL_CXXFLAGS "$::env(KSL_CXXFLAGS) -g"
+setenv KSL_FFLAGS   "$::env(KSL_FFLAGS) -g"
+setenv KSL_F77FLAGS "$::env(KSL_F77FLAGS) -g"
+setenv KSL_F90FLAGS "$::env(KSL_F90FLAGS) -g"
+
+# The below magic is for Emacs editing convenience
+# Local Variables: 
+# mode: tcl
+# End:
+# 
