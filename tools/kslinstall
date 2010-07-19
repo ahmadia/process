@@ -19,18 +19,21 @@ def main():
             variant_logs = []
             if variant.build_host != os.uname()[4]:
                 log = logging.getLogger('ksl.installer')
-                log.info('skipping variant %s because it requires build arch %s [host arch: %s]' %
-                         (variant.variant_id, variant.build_host, os.uname()[4]))
+                log.info('skipping build %s because it requires build arch %s [host arch: %s]' %
+                         (variant.target_arch+variant.tag, variant.build_host, os.uname()[4]))
                 continue
 
             setup_target_dir(variant, options)
             variant_logs = setup_package_logs(variant)
-            variant.install()
+            if options.do_install:
+                variant.install()
+            if options.do_module:
+                variant.install_module()
             close_logs(variant_logs)
 
         except Exception, err:
             log = logging.getLogger('ksl.installer')
-            log.error('error during install of variant %s: %s', (variant.variant_id, err))
+            log.error('error during install of variant %s: %s', (variant.target_arch+variant.tag, err))
             close_logs(variant_logs)        
 
 def get_options():
@@ -57,11 +60,19 @@ def get_options():
     parser.add_option("-b", "--build_dir",
                       action="store", dest="build_dir", default="./kslbuild",
                       help="working build directory (default: ./klsbuild)")
-    parser.add_option("-m", "--module_cmd",
+    parser.add_option("-c", "--module_cmd",
                       action="store", dest="module_cmd",
                       default="/opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd",
                       help="module command " + \
                       "(default: /opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd)")
+    parser.add_option("--no_install",
+                      action="store_false", dest="do_install",
+                      default=True,
+                      help="Don't install builds")                      
+    parser.add_option("--no_module",
+                      action="store_false", dest="do_module",
+                      default=True,
+                      help="Don't install modulefiles")                      
 
     (options, args) = parser.parse_args()
 
@@ -92,7 +103,7 @@ def setup_installer_log(options):
 
 def setup_target_dir(variant, options):
     variant.target_dir = join(
-        variant.root,variant.name,variant.version,variant.variant_id)
+        variant.root,variant.name,variant.version,variant.target_arch,variant.tag)
     
     if os.path.exists(variant.target_dir):
         if not options.force:
@@ -110,7 +121,7 @@ def setup_target_dir(variant, options):
 
 def setup_package_logs(variant):
     root = '/opt/share/ksl/system/logs/installs'
-    prefix = variant.name+'-'+variant.version+'-'+variant.release+'_'+variant.variant_id
+    prefix = variant.name+'-'+variant.version+'-'+variant.release+'_'+variant.target_arch+variant.tag
 
     logf = logging.Formatter('%(asctime)s %(name)s:\n%(message)s')
 
@@ -136,7 +147,7 @@ def setup_package_logs(variant):
     logging.getLogger('ksl.installer.package.make').addHandler(makelog)
 
     log = logging.getLogger('ksl.installer')
-    log.info('logging install for variant %s to %s' % (variant.variant_id, logname))
+    log.info('logging install for build %s to %s' % (variant.target_arch+variant.tag, logname))
 
     return [(plog, 'ksl.installer.package'),
             (configurelog, 'ksl.installer.package.configure'),

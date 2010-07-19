@@ -42,17 +42,17 @@ standard_install = (s0, s1, s2, s4, s5)
 patched_install = (s0, s1, s2, s3, s4, s5)
 
 base.install_steps = standard_install
+base.tag = ''
 
 ppc450d = copy(base)
 ppc450d.build_host = 'ppc64'
 ppc450d.modules = ['ibm']
 ppc450d.target_arch = 'ppc450d'
-ppc450d.variant_id = 'ppc450d'
 ppc450d.install_steps = patched_install
 variants.append(ppc450d)
 
 ppc450d_debug = copy(ppc450d)
-ppc450d_debug.variant_id = 'ppc450d-debug'
+ppc450d_debug.tag = '-debug'
 ppc450d_debug.modules = ['debug','ibm']
 ppc450d_debug.install_steps = patched_install
 variants.append(ppc450d_debug)
@@ -61,12 +61,11 @@ x86_64 = copy(base)
 x86_64.build_host = 'x86_64'
 x86_64.modules = ['gnu']
 x86_64.target_arch = 'x86_64'
-x86_64.variant_id = 'x86_64'
 variants.append(x86_64)
 
 x86_64_intel = copy(x86_64)
 x86_64_intel.modules = ['intel']
-x86_64_intel.variant_id = 'x86_64-intel'
+x86_64_intel.tag = '-intel'
 variants.append(x86_64_intel)
 
 
