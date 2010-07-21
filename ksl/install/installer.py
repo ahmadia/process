@@ -70,6 +70,7 @@ class installer:
         self.shell_command('patch --verbose -p1 -i %s' % (patch), 'patch')
     
     def make(self):
+        self.shell_command('${CC} -compile-info')
         self.shell_command('make', 'make')
     
     def make_install(self):
