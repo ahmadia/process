@@ -23,18 +23,21 @@ def main():
                          (variant.target_arch+variant.tag, variant.build_host, os.uname()[4]))
                 continue
 
-            setup_target_dir(variant, options)
             variant_logs = setup_package_logs(variant)
+            setup_target_dir(variant, options)
             if options.do_install:
+                clobber_dir(variant, variant.target_dir, options)
                 variant.install()
             if options.do_module:
+                setup_module_dir(variant, options)
                 variant.install_module()
             close_logs(variant_logs)
 
         except Exception, err:
             log = logging.getLogger('ksl.installer')
-            log.error('error during install of variant %s: %s', (variant.target_arch+variant.tag, err))
-            close_logs(variant_logs)        
+            log.error('error during install of variant %s: %s' % (variant.target_arch+variant.tag, err))
+            close_logs(variant_logs)
+            raise
 
 def get_options():
     parser = OptionParser()
@@ -51,12 +54,12 @@ def get_options():
                       action="store", dest="source_paths",
                       default="/opt/share/ksl/system/sources",
                       help="source paths to search " +\
-                      "(default: /opt/share/ksl/systems/sources)")
+                      "(default: /opt/share/ksl/system/sources)")
     parser.add_option("-p", "--patch_paths",
                       action="store", dest="patch_paths",
                       default="/opt/share/ksl/system/patches",
                       help="patch paths to search " +\
-                      "(default: /opt/share/ksl/systems/patches)")
+                      "(default: /opt/share/ksl/system/patches)")
     parser.add_option("-b", "--build_dir",
                       action="store", dest="build_dir", default="./kslbuild",
                       help="working build directory (default: ./klsbuild)")
@@ -65,6 +68,17 @@ def get_options():
                       default="/opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd",
                       help="module command " + \
                       "(default: /opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd)")
+    parser.add_option("-m", "--root_module_dir",
+                      action="store", dest="root_module_dir",
+                      default="/opt/share/ksl/modules",
+                      help="root module directory to install to" + \
+                      "(default: /opt/share/ksl/modules")
+
+    parser.add_option("-t", "--module_template",
+                      action="store", dest="module_template",
+                      default="/opt/share/ksl/system/templates/module.ksl",
+                      help="template module file " + \
+                      "(default: /opt/share/ksl/system/templates/module.ksl")
     parser.add_option("--no_install",
                       action="store_false", dest="do_install",
                       default=True,
@@ -103,21 +117,54 @@ def setup_installer_log(options):
 
 def setup_target_dir(variant, options):
     variant.target_dir = join(
-        variant.root,variant.name,variant.version,variant.target_arch,variant.tag)
-    
-    if os.path.exists(variant.target_dir):
+        variant.root,variant.name,variant.version,variant.target_arch+variant.tag)
+
+def setup_module_dir(variant, options):
+    log = logging.getLogger('ksl.installer')
+
+    variant_modules_dir = join(options.root_module_dir, variant.target_arch, variant.name)
+    if not os.path.exists(variant_modules_dir):
+        log.info("creating empty directory %s" % variant_modules_dir)
+        os.makedirs(variant_modules_dir)
+
+    module_name = variant.version+variant.tag
+ 
+    if variant.tag == "":
+        version_file = join(variant_modules_dir,'.version')
+        if os.path.exists(version_file):
+            if not options.force:
+                confirmation = raw_input(
+                    "Can I clobber module default version file %s? [y/n]: " % version_file)
+                log.info("deleting version file %s" % version_file)
+                os.remove(version_file)
+                if confirmation is not 'y':
+                    raise Exception(
+                        "unwilling to clobber version file %s" % version_file)
+        log.info("setting default module version for %s on %s to %s " %
+                 (variant.name, variant.target_arch, variant.version))
+        file_handle = open(version_file, 'w')
+        file_handle.write('#%%Module1.0\nset ModulesVersion "%s"\n' % variant.version)
+        file_handle.close()
+    else:
+        log.info("installing non-default variant to module %s" % module_name)
+        
+    variant.module_file = join(variant_modules_dir, module_name)
+
+def clobber_dir(variant, clobber_dir, options):
+    log = logging.getLogger('ksl.installer')
+        
+    if os.path.exists(clobber_dir):
         if not options.force:
             confirmation = raw_input(
-                "Can I clobber target directory %s? [y/n]: " % variant.target_dir)
-            
+                "Can I clobber directory %s? [y/n]: " % clobber_dir)
             if confirmation is not 'y':
                 raise Exception(
-                    "unwilling to clobber target directory %s" % variant.target_dir)
-            
-        rmtree(variant.target_dir)
+                    "unwilling to clobber directory %s" % clobber_dir)
+        log.info("clobbering directory %s" %  clobber_dir)
+        rmtree(clobber_dir)
 
-    makedirs(variant.target_dir)
-
+    log.info("creating empty directory %s" % clobber_dir)
+    makedirs(clobber_dir)
 
 def setup_package_logs(variant):
     root = '/opt/share/ksl/system/logs/installs'
@@ -177,6 +224,7 @@ def parse_install_file(options, args):
         variant.patch_paths = options.patch_paths
         variant.build_dir = options.build_dir
         variant.module_cmd = options.module_cmd
+        variant.module_template = options.module_template
 
     return variants
 
