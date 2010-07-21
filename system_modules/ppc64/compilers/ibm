@@ -5,13 +5,10 @@
 # KAUST Supercomputing Laboratories
 # shaheen-help@kaust.edu.sa
 
-module-whatis   "configures usage of the IBM XL Compiler Suite"
+module-whatis "configures usage of the IBM XL Compiler Suite"
 
 # Only one compiler module should be active at any time
 conflict gnu intel
-
-# The IBM compiler is only available on ppc64 platforms
-prereq ppc64_host
 
 proc ModulesHelp { } {
     puts stderr \
@@ -24,7 +21,7 @@ the front-end node (the computer you are logged in to):
  
 \t mpixlc_r   -> calls the IBM XL C   cross-compiler with MPI
 \t mpixlcxx_r -> calls the IBM XL C++ cross-compiler with MPI
-\t mpixlf77_r -> calls the IBM XL F77 cross-compiler with MPI
+\t mpixlf77_r -> calls the IBM XL F77 cross-compiler with MPI 
 \t mpixlf90_r -> calls the IBM XL F90 cross-compiler with MPI
  
 It is not recommended, but you may disable multithreading by
