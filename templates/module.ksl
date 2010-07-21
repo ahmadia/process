@@ -1,0 +1,65 @@
+#%Module
+#
+# Modulefile for ${name}-$version
+#
+# Auto-installed by kslinstall
+#
+# KAUST Supercomputing Laboratories
+# shaheen-help@kaust.edu.sa
+
+module-whatis "configures usage of $summary"
+
+# prerequisites
+$modules_command
+
+proc ModulesHelp { } {
+    puts stderr \
+"This module configures usage of the $summary
+
+$description
+
+This module appends to your environment the following for using $name
+
+include paths: $includes_pretty
+library paths: $libdirs_pretty
+libraries    : $libs_pretty
+binaries     : $binaries_pretty
+paths        : $paths_pretty
+
+These prerequisite modules are loaded: 
+$modules_pretty
+
+These commands should now compile/link with $name support:
+
+    \$${KSL_CC}   \$${KSL_${UNAME}_CFLAGS}   file.c   \$${KSL_${UNAME}_LDFLAGS}
+    \$${KSL_CXX}  \$${KSL_${UNAME}_CXXFLAGS} file.cxx \$${KSL_${UNAME}_LDFLAGS}
+    \$${KSL_F77}  \$${KSL_${UNAME}_F77FLAGS} file.f   \$${KSL_${UNAME}_LDFLAGS}
+    \$${KSL_F90}  \$${KSL_${UNAME}_F90FLAGS} file.f90 \$${KSL_${UNAME}_LDFLAGS}
+    \$${KSL_FC}   \$${KSL_${UNAME}_FFFLAGS}  file.f   \$${KSL_${UNAME}_LDFLAGS}
+
+If you have loaded the genie module, the corresponding base
+environment variables (e.g. CFLAGS for KSL_${UNAME}_CFLAGS) will also be
+prepended.
+
+$notes 
+"
+}
+
+if [is-loaded genie] {
+    setenv CFLAGS    "$$::env(CFLAGS)   $includes_command"
+    setenv CXXFLAGS  "$$::env(CXXFLAGS) $includes_command"
+    setenv F77FLAGS  "$$::env(F77FLAGS) $includes_command"
+    setenv F90FLAGS  "$$::env(F90FLAGS) $includes_command"
+    setenv FFLAGS    "$$::env(FFLAGS)   $includes_command"
+    setenv LDFLAGS   "$$::env(LDFLAGS)  $libs_command"
+}
+
+setenv KSL_${UNAME}_CFLAGS    $includes_command
+setenv KSL_${UNAME}_CXXFLAGS  $includes_command
+setenv KSL_${UNAME}_F77FLAGS  $includes_command
+setenv KSL_${UNAME}_F90FLAGS  $includes_command
+setenv KSL_${UNAME}_FFLAGS    $includes_command
+setenv KSL_${UNAME}_LDFLAGS   $libs_command
+
+setenv PATH                   $paths_command
+
