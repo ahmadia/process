@@ -1,0 +1,104 @@
+diff -crB --exclude=config.log szip-2.1/libtool szip-2.1-bgp/libtool
+*** szip-2.1/libtool	2010-07-19 10:23:00.533054483 +0300
+--- szip-2.1-bgp/libtool	2010-07-19 10:34:43.000000000 +0300
+***************
+*** 143,149 ****
+  exeext=""
+  
+  # Additional compiler flags for building library objects.
+! pic_flag=" -DPIC"
+  pic_mode=default
+  
+  # What is the maximum length of a command?
+--- 143,149 ----
+  exeext=""
+  
+  # Additional compiler flags for building library objects.
+! pic_flag=" -qpic"
+  pic_mode=default
+  
+  # What is the maximum length of a command?
+***************
+*** 171,177 ****
+  dlopen_self_static=unknown
+  
+  # Compiler flag to prevent dynamic linking.
+! link_static_flag=""
+  
+  # Compiler flag to turn off builtin functions.
+  no_builtin_flag=""
+--- 171,177 ----
+  dlopen_self_static=unknown
+  
+  # Compiler flag to prevent dynamic linking.
+! link_static_flag="-qstaticlink"
+  
+  # Compiler flag to turn off builtin functions.
+  no_builtin_flag=""
+***************
+*** 211,221 ****
+  old_archive_from_expsyms_cmds=""
+  
+  # Commands used to build and install a shared archive.
+! archive_cmds="\$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
+  archive_expsym_cmds="\$echo \\\"{ global:\\\" > \$output_objdir/\$libname.ver~
+    cat \$export_symbols | sed -e \\\"s/\\\\(.*\\\\)/\\\\1;/\\\" >> \$output_objdir/\$libname.ver~
+    \$echo \\\"local: *; };\\\" >> \$output_objdir/\$libname.ver~
+! 	  \$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-version-script \${wl}\$output_objdir/\$libname.ver -o \$lib"
+  postinstall_cmds=""
+  postuninstall_cmds=""
+  
+--- 211,221 ----
+  old_archive_from_expsyms_cmds=""
+  
+  # Commands used to build and install a shared archive.
+! archive_cmds="\$CC -qmkshrobj \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
+  archive_expsym_cmds="\$echo \\\"{ global:\\\" > \$output_objdir/\$libname.ver~
+    cat \$export_symbols | sed -e \\\"s/\\\\(.*\\\\)/\\\\1;/\\\" >> \$output_objdir/\$libname.ver~
+    \$echo \\\"local: *; };\\\" >> \$output_objdir/\$libname.ver~
+! 	  \$CC -qmkshrobj \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-version-script \${wl}\$output_objdir/\$libname.ver -o \$lib"
+  postinstall_cmds=""
+  postuninstall_cmds=""
+  
+***************
+*** 291,297 ****
+  
+  # Flag to hardcode $libdir into a binary during linking.
+  # This must work even if $libdir does not exist.
+! hardcode_libdir_flag_spec="\${wl}--rpath \${wl}\$libdir"
+  
+  # If ld is used when linking, flag to hardcode $libdir into
+  # a binary during linking. This must work even if $libdir does
+--- 291,297 ----
+  
+  # Flag to hardcode $libdir into a binary during linking.
+  # This must work even if $libdir does not exist.
+! hardcode_libdir_flag_spec="-qnostaticlink \${wl}--rpath \${wl}\$libdir"
+  
+  # If ld is used when linking, flag to hardcode $libdir into
+  # a binary during linking. This must work even if $libdir does
+***************
+*** 7687,7697 ****
+  old_archive_from_expsyms_cmds=""
+  
+  # Commands used to build and install a shared archive.
+! archive_cmds="\$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
+  archive_expsym_cmds="\$echo \\\"{ global:\\\" > \$output_objdir/\$libname.ver~
+    cat \$export_symbols | sed -e \\\"s/\\\\(.*\\\\)/\\\\1;/\\\" >> \$output_objdir/\$libname.ver~
+    \$echo \\\"local: *; };\\\" >> \$output_objdir/\$libname.ver~
+! 	  \$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-version-script \${wl}\$output_objdir/\$libname.ver -o \$lib"
+  postinstall_cmds=""
+  postuninstall_cmds=""
+  
+--- 7687,7697 ----
+  old_archive_from_expsyms_cmds=""
+  
+  # Commands used to build and install a shared archive.
+! archive_cmds="\$CC -qmkshrobj \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
+  archive_expsym_cmds="\$echo \\\"{ global:\\\" > \$output_objdir/\$libname.ver~
+    cat \$export_symbols | sed -e \\\"s/\\\\(.*\\\\)/\\\\1;/\\\" >> \$output_objdir/\$libname.ver~
+    \$echo \\\"local: *; };\\\" >> \$output_objdir/\$libname.ver~
+! 	  \$CC -qmkshrobj \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-version-script \${wl}\$output_objdir/\$libname.ver -o \$lib"
+  postinstall_cmds=""
+  postuninstall_cmds=""
+  
