@@ -3,9 +3,11 @@ import tarfile
 import logging
 import subprocess
 import os
-from os.path import exists, join, abspath
+from os.path import exists, join, abspath, splitext, normpath
 from os import pathsep, chdir
 from string import split
+from string import Template
+from inspect import getmembers
 
 class installer:
     def __init__(self, data=None):
@@ -27,13 +29,52 @@ class installer:
 
         if self.modulesLoaded:
             self.unload_modules()
+
+    def install_module(self):
+        self.log.info('beginning module installation')
+        template_data = open(self.module_template, 'r')
+        template = Template(template_data.read())
+        template_data.close()
+
+        add_root = lambda p: normpath(join(self.target_dir,p))
+
+        self.UNAME            = self.name.upper()
+        self.binaries_pretty  = ", ".join(b for b in self.binaries)
+        self.paths_pretty     = ", ".join(add_root(p) for p in self.paths)
+        self.paths_command    = "$::env(PATH):" + ":".join(add_root(p) for p in self.paths)
+        self.paths_fake       = "\$(PATH):" + ":".join(add_root(p) for p in self.paths)
+        
+        self.includes_pretty  = ", ".join(add_root(p) for p in self.includes)
+        self.includes_command = "-I"+" -I".join(add_root(p) for p in self.includes)
+        self.libdirs_pretty   = ", ".join(add_root(p) for p in self.libdirs)
+        self.libs_pretty      = ", ".join(l for l in self.libs)
+
+        lib_strip = lambda l: splitext(l)[0].replace('lib','-l')
+        self.libs_command     = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
+                                "".join(" %s" % (lib_strip(l)) for l in self.libs)
+
+        self.modules_pretty   = " ".join(m for m in self.required_modules)
+        self.modules_command  = "module load " + " ".join(m for m in self.required_modules)
+
+        # oh man is this dirty        
+        module_data = template.substitute(dict(getmembers(self)))
+        self.log.info("installing module file %s with contents:" % self.module_file)
+        self.log.info(module_data)
+
+        handle = open(self.module_file,'w')
+        handle.write(module_data)
+        handle.close()
         
     def unload_modules(self):
         self.log.info("unloading module: genie")
 
         self.module('unload genie')
+
+        for module in self.required_modules:
+            self.log.info("unloading module: %s" % module)
+            self.module("unload %s" % module)
         
-        for module in self.modules:
+        for module in self.compile_modules:
             self.log.info("unloading module: %s" % module)
             self.module("unload %s" % module)
 
@@ -43,9 +84,14 @@ class installer:
 
         self.module('load genie')
         
-        for module in self.modules:
+        for module in self.compile_modules:
             self.log.info("loading module: %s" % module)
             self.module("load %s" % module)
+
+        for module in self.required_modules:
+            self.log.info("loading module: %s" % module)
+            self.module("load %s" % module)
+
         self.modulesLoaded = True
     
     def unpack_source(self):
@@ -149,3 +195,4 @@ configure = installer.configure
 apply_patch = installer.apply_patch
 make = installer.make
 make_install = installer.make_install
+shell_command = installer.shell_command
