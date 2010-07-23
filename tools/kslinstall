@@ -37,7 +37,9 @@ def main():
             log = logging.getLogger('ksl.installer')
             log.error('error during install of variant %s: %s' % (variant.target_arch+variant.tag, err))
             close_logs(variant_logs)
-            raise
+
+            if options.errors_fatal:
+                raise
 
 def get_options():
     parser = OptionParser()
@@ -73,6 +75,10 @@ def get_options():
                       default="/opt/share/ksl/modules",
                       help="root module directory to install to" + \
                       "(default: /opt/share/ksl/modules")
+    parser.add_option("errors_fatal",
+                      action="store_true", dest="errors_fatal",
+                      default=False,
+                      help="Abort if any variant builds fail")
 
     parser.add_option("-t", "--module_template",
                       action="store", dest="module_template",
@@ -84,8 +90,7 @@ def get_options():
                       default=True,
                       help="Don't install builds")                      
     parser.add_option("--no_module",
-                      action="store_false", dest="do_module",
-                      default=True,
+                      action="store_false", dest="do_module", default=True,
                       help="Don't install modulefiles")                      
 
     (options, args) = parser.parse_args()
