@@ -9,23 +9,25 @@ module-whatis "environment initialization (resets user build environment flags)"
 
 proc ModulesHelp { } {
     puts stderr \
-"this module clears the user's build environment and is loaded first
+"this module clears the user's build/runtime environment and is loaded first
 "
 }
 
-setenv CFLAGS        ""
-setenv CXXFLAGS      ""
-setenv FFLAGS        ""
-setenv F77FLAGS      ""
-setenv F90FLAGS      ""
-setenv LDFLAGS       ""
+setenv CFLAGS              ""
+setenv CXXFLAGS            ""
+setenv FFLAGS              ""
+setenv F77FLAGS            ""
+setenv F90FLAGS            ""
+setenv LDFLAGS             ""
+setenv LD_LIBRARY_PATH     ""
 
-setenv KSL_CFLAGS    ""
-setenv KSL_CXXFLAGS  ""
-setenv KSL_FFLAGS    ""
-setenv KSL_F77FLAGS  ""
-setenv KSL_F90FLAGS  ""
-setenv KSL_LDFLAGS   ""
+setenv KSL_CFLAGS          ""
+setenv KSL_CXXFLAGS        ""
+setenv KSL_FFLAGS          ""
+setenv KSL_F77FLAGS        ""
+setenv KSL_F90FLAGS        ""
+setenv KSL_LDFLAGS         ""
+setenv KSL_LD_LIBRARY_PATH ""
 
 # The below magic is for Emacs editing convenience
 # Local Variables: 

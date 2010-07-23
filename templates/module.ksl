@@ -20,11 +20,11 @@ $description
 
 This module appends to your environment the following for using $name
 
-include paths: $includes_pretty
-library paths: $libdirs_pretty
-libraries    : $libs_pretty
-binaries     : $binaries_pretty
-paths        : $paths_pretty
+include paths : $includes_pretty
+library paths : $libdirs_pretty
+libraries     : $libs_pretty
+binaries      : $binaries_pretty
+paths         : $paths_pretty
 
 These prerequisite modules are loaded: 
 $modules_pretty
@@ -46,20 +46,24 @@ $notes
 }
 
 if [is-loaded genie] {
-    setenv CFLAGS    "$$::env(CFLAGS)   $includes_command"
-    setenv CXXFLAGS  "$$::env(CXXFLAGS) $includes_command"
-    setenv F77FLAGS  "$$::env(F77FLAGS) $includes_command"
-    setenv F90FLAGS  "$$::env(F90FLAGS) $includes_command"
-    setenv FFLAGS    "$$::env(FFLAGS)   $includes_command"
-    setenv LDFLAGS   "$$::env(LDFLAGS)  $libs_command"
+    setenv CFLAGS           "$$::env(CFLAGS)   $includes_command"
+    setenv CXXFLAGS         "$$::env(CXXFLAGS) $includes_command"
+    setenv F77FLAGS         "$$::env(F77FLAGS) $includes_command"
+    setenv F90FLAGS         "$$::env(F90FLAGS) $includes_command"
+    setenv FFLAGS           "$$::env(FFLAGS)   $includes_command"
+    setenv LDFLAGS          "$$::env(LDFLAGS)  $libs_command"
+
+    prepend-path LD_LIBRARY_PATH "$libpaths_command"
 }
 
-setenv KSL_${UNAME}_CFLAGS    "$includes_command"
-setenv KSL_${UNAME}_CXXFLAGS  "$includes_command"
-setenv KSL_${UNAME}_F77FLAGS  "$includes_command"
-setenv KSL_${UNAME}_F90FLAGS  "$includes_command"
-setenv KSL_${UNAME}_FFLAGS    "$includes_command"
-setenv KSL_${UNAME}_LDFLAGS   "$libs_command"
+setenv KSL_${UNAME}_CFLAGS           "$includes_command"
+setenv KSL_${UNAME}_CXXFLAGS         "$includes_command"
+setenv KSL_${UNAME}_F77FLAGS         "$includes_command"
+setenv KSL_${UNAME}_F90FLAGS         "$includes_command"
+setenv KSL_${UNAME}_FFLAGS           "$includes_command"
+setenv KSL_${UNAME}_LDFLAGS          "$libs_command"
+
+prepend-path KSL_${UNAME}_LD_LIBRARY_PATH  "$libpaths_command"
 
 setenv PATH                   "$paths_command"
 

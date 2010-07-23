@@ -42,6 +42,9 @@ def main():
                 raise
 
 def get_options():
+
+    builddir = "./builddir_%s" % os.uname()[4]
+    
     parser = OptionParser()
     parser.add_option("-q", "--quiet",
                       action="store_false", dest="verbose", default=True,
@@ -63,8 +66,8 @@ def get_options():
                       help="patch paths to search " +\
                       "(default: /opt/share/ksl/tools/process/patches)")
     parser.add_option("-b", "--build_dir",
-                      action="store", dest="build_dir", default="./kslbuild",
-                      help="working build directory (default: ./klsbuild)")
+                      action="store", dest="build_dir", default=builddir,
+                      help="working build directory (default: %s)" % builddir)
     parser.add_option("-c", "--module_cmd",
                       action="store", dest="module_cmd",
                       default="/opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd",

@@ -41,20 +41,34 @@ class installer:
         self.UNAME            = self.name.upper()
         self.binaries_pretty  = ", ".join(b for b in self.binaries)
         self.paths_pretty     = ", ".join(add_root(p) for p in self.paths)
-        self.paths_command    = "$::env(PATH):" + ":".join(add_root(p) for p in self.paths)
+        if not self.paths:
+            self.paths_command = "$::env(PATH)"
+        else:
+            self.paths_command    = "$::env(PATH):" + ":".join(add_root(p) for p in self.paths)
+
         self.paths_fake       = "\$(PATH):" + ":".join(add_root(p) for p in self.paths)
         
         self.includes_pretty  = ", ".join(add_root(p) for p in self.includes)
-        self.includes_command = "-I"+" -I".join(add_root(p) for p in self.includes)
+        if not self.includes:
+            self.includes_command = ""
+        else:
+            self.includes_command = "-I"+" -I".join(add_root(p) for p in self.includes)
         self.libdirs_pretty   = ", ".join(add_root(p) for p in self.libdirs)
         self.libs_pretty      = ", ".join(l for l in self.libs)
 
         lib_strip = lambda l: splitext(l)[0].replace('lib','-l')
-        self.libs_command     = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
-                                "".join(" %s" % (lib_strip(l)) for l in self.libs)
-
+        self.libpaths_command  = ":".join(add_root(p) for p in self.libdirs)
+        if not self.libs:
+            self.libs_command  = ""
+        else:
+            self.libs_command  = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
+                                 "".join(" %s" % (lib_strip(l)) for l in self.libs)
+            
         self.modules_pretty   = " ".join(m for m in self.required_modules)
-        self.modules_command  = "module load " + " ".join(m for m in self.required_modules)
+        if not self.required_modules:
+            self.modules_command = ""
+        else:
+            self.modules_command  = "module load " + " ".join(m for m in self.required_modules)
 
         # oh man is this dirty        
         module_data = template.substitute(dict(getmembers(self)))
