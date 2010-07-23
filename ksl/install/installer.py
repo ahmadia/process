@@ -122,6 +122,11 @@ class installer:
     def make_install(self):
         self.shell_command('make install', 'make')
 
+    def python(self, command, argtuple):
+        log = self.log
+        log.info(command)
+        command(argtuple)
+
     def shell_command(self, command, log_file=''):
         if log_file is not '':
             log = logging.getLogger('ksl.installer.package.%s' % log_file)
@@ -131,9 +136,13 @@ class installer:
         p = subprocess.Popen(command, shell=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
-        err_code = p.wait()
-        return_data = p.stdout.read()
-        log.info(return_data) 
+
+        while p.returncode is None:
+            p.poll()
+            out = p.stdout.readline()
+            log.info(out)
+            
+        err_code = p.returncode
         if err_code:
             err_msg = "command %s failed, see log for details" % command
             log.error(err_msg)
@@ -196,3 +205,4 @@ apply_patch = installer.apply_patch
 make = installer.make
 make_install = installer.make_install
 shell_command = installer.shell_command
+python = installer.python
