@@ -44,6 +44,7 @@ def main():
 def get_options():
 
     builddir = "./builddir_%s" % os.uname()[4]
+    module_cmd = "/opt/share/ksl/modules/3.2.7b/%s/Modules/3.2.7/bin/modulecmd" % os.uname()[4]
     
     parser = OptionParser()
     parser.add_option("-q", "--quiet",
@@ -70,14 +71,14 @@ def get_options():
                       help="working build directory (default: %s)" % builddir)
     parser.add_option("-c", "--module_cmd",
                       action="store", dest="module_cmd",
-                      default="/opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd",
+                      default=module_cmd,
                       help="module command " + \
-                      "(default: /opt/share/ksl/tools/Modules/3.2.7/bin/modulecmd)")
+                      " default: %s" % module_cmd)
     parser.add_option("-m", "--root_module_dir",
                       action="store", dest="root_module_dir",
                       default="/opt/share/ksl/modules",
                       help="root module directory to install to" + \
-                      "(default: /opt/share/ksl/modules")
+                      " (default: /opt/share/ksl/modules")
     parser.add_option("--errors_fatal",
                       action="store_true", dest="errors_fatal",
                       default=False,
