@@ -22,7 +22,7 @@ setenv FFLAGS              ""
 setenv F77FLAGS            ""
 setenv F90FLAGS            ""
 setenv LDFLAGS             ""
-setenv LD_LIBRARY_PATH     "$$::env(KSL_TCL_LD_LIBRARY_PATH)"
+setenv LD_LIBRARY_PATH     "$::env(KSL_TCL_LD_LIBRARY_PATH)"
 
 setenv KSL_CFLAGS          ""
 setenv KSL_CXXFLAGS        ""
@@ -30,7 +30,7 @@ setenv KSL_FFLAGS          ""
 setenv KSL_F77FLAGS        ""
 setenv KSL_F90FLAGS        ""
 setenv KSL_LDFLAGS         ""
-setenv KSL_LD_LIBRARY_PATH "$$::env(KSL_TCL_LD_LIBRARY_PATH)"
+setenv KSL_LD_LIBRARY_PATH "$::env(KSL_TCL_LD_LIBRARY_PATH)"
 
 # The below magic is for Emacs editing convenience
 # Local Variables: 
