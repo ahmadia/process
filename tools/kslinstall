@@ -75,7 +75,7 @@ def get_options():
                       default="/opt/share/ksl/modules",
                       help="root module directory to install to" + \
                       "(default: /opt/share/ksl/modules")
-    parser.add_option("errors_fatal",
+    parser.add_option("--errors_fatal",
                       action="store_true", dest="errors_fatal",
                       default=False,
                       help="Abort if any variant builds fail")
