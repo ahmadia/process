@@ -54,12 +54,12 @@ if [is-loaded genie] {
     setenv LDFLAGS   "$$::env(LDFLAGS)  $libs_command"
 }
 
-setenv KSL_${UNAME}_CFLAGS    $includes_command
-setenv KSL_${UNAME}_CXXFLAGS  $includes_command
-setenv KSL_${UNAME}_F77FLAGS  $includes_command
-setenv KSL_${UNAME}_F90FLAGS  $includes_command
-setenv KSL_${UNAME}_FFLAGS    $includes_command
-setenv KSL_${UNAME}_LDFLAGS   $libs_command
+setenv KSL_${UNAME}_CFLAGS    "$includes_command"
+setenv KSL_${UNAME}_CXXFLAGS  "$includes_command"
+setenv KSL_${UNAME}_F77FLAGS  "$includes_command"
+setenv KSL_${UNAME}_F90FLAGS  "$includes_command"
+setenv KSL_${UNAME}_FFLAGS    "$includes_command"
+setenv KSL_${UNAME}_LDFLAGS   "$libs_command"
 
-setenv PATH                   $paths_command
+setenv PATH                   "$paths_command"
 
