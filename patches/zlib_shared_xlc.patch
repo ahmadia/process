@@ -1,0 +1,83 @@
+diff -crB zlib-1.2.5/Makefile zlib-1.2.5-bgp/Makefile
+*** zlib-1.2.5/Makefile	2010-07-23 23:09:05.460074523 +0300
+--- zlib-1.2.5-bgp/Makefile	2010-07-23 23:07:10.089933409 +0300
+***************
+*** 24,33 ****
+  #CFLAGS=-O3 -Wall -Wwrite-strings -Wpointer-arith -Wconversion \
+  #           -Wstrict-prototypes -Wmissing-prototypes
+  
+! SFLAGS= -D_LARGEFILE64_SOURCE=1
+  LDFLAGS= -L. libz.a
+  TEST_LDFLAGS=-L. libz.a
+! LDSHARED=cc -shared
+  CPP=/bgsys/drivers/ppcfloor/comm/xl/bin/mpixlc_r -E
+  
+  STATICLIB=libz.a
+--- 24,33 ----
+  #CFLAGS=-O3 -Wall -Wwrite-strings -Wpointer-arith -Wconversion \
+  #           -Wstrict-prototypes -Wmissing-prototypes
+  
+! SFLAGS= -D_LARGEFILE64_SOURCE=1 -qpic
+  LDFLAGS= -L. libz.a
+  TEST_LDFLAGS=-L. libz.a
+! LDSHARED=${CC} -shared
+  CPP=/bgsys/drivers/ppcfloor/comm/xl/bin/mpixlc_r -E
+  
+  STATICLIB=libz.a
+***************
+*** 119,125 ****
+  
+  match.lo: match.S
+  	$(CPP) match.S > _match.s
+! 	$(CC) -c -fPIC _match.s
+  	mv _match.o match.lo
+  	rm -f _match.s
+  
+--- 119,125 ----
+  
+  match.lo: match.S
+  	$(CPP) match.S > _match.s
+! 	$(CC) -c -qpic _match.s
+  	mv _match.o match.lo
+  	rm -f _match.s
+  
+***************
+*** 137,143 ****
+  	-@mv objs/$*.o $@
+  
+  $(SHAREDLIBV): $(PIC_OBJS)
+! 	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
+  	rm -f $(SHAREDLIB) $(SHAREDLIBM)
+  	ln -s $@ $(SHAREDLIB)
+  	ln -s $@ $(SHAREDLIBM)
+--- 137,143 ----
+  	-@mv objs/$*.o $@
+  
+  $(SHAREDLIBV): $(PIC_OBJS)
+! 	$(LDSHARED) $(SFLAGS) -qmkshrobj -qnostaticlink -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
+  	rm -f $(SHAREDLIB) $(SHAREDLIBM)
+  	ln -s $@ $(SHAREDLIB)
+  	ln -s $@ $(SHAREDLIBM)
+***************
+*** 150,159 ****
+  	$(CC) $(CFLAGS) -o $@ minigzip.o $(TEST_LDFLAGS)
+  
+  examplesh$(EXE): example.o $(SHAREDLIBV)
+! 	$(CC) $(CFLAGS) -o $@ example.o -L. $(SHAREDLIBV)
+  
+  minigzipsh$(EXE): minigzip.o $(SHAREDLIBV)
+! 	$(CC) $(CFLAGS) -o $@ minigzip.o -L. $(SHAREDLIBV)
+  
+  example64$(EXE): example64.o $(STATICLIB)
+  	$(CC) $(CFLAGS) -o $@ example64.o $(TEST_LDFLAGS)
+--- 150,159 ----
+  	$(CC) $(CFLAGS) -o $@ minigzip.o $(TEST_LDFLAGS)
+  
+  examplesh$(EXE): example.o $(SHAREDLIBV)
+! 	$(CC) $(CFLAGS) -qnostaticlink -o $@ example.o -L. $(SHAREDLIBV)
+  
+  minigzipsh$(EXE): minigzip.o $(SHAREDLIBV)
+! 	$(CC) $(CFLAGS) -qnostaticlink -o $@ minigzip.o -L. $(SHAREDLIBV)
+  
+  example64$(EXE): example64.o $(STATICLIB)
+  	$(CC) $(CFLAGS) -o $@ example64.o $(TEST_LDFLAGS)
