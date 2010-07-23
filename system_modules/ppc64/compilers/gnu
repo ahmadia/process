@@ -1,0 +1,46 @@
+#%Module
+#
+# Modulefile for the GNU suite of compilers 
+#
+# KAUST Supercomputing Laboratories
+# shaheen-help@kaust.edu.sa
+
+module-whatis   "configures usage of the GNU Compiler Collection"
+
+# Only one compiler module should be active at any time
+conflict ibm intel
+
+proc ModulesHelp { } {
+    puts stderr \
+"This module configures usage of the GNU cross-compiler collection.
+     
+The following cross-compiler commands include the necessary include
+and linking references to the MPI library so that MPI-enabled
+binaries can be compiled and linked on the back-end:
+ 
+\t mpicc  -> calls the GNU C   cross-compiler with MPI
+\t mpicxx -> calls the GNU C++ cross-compiler with MPI
+\t mpif77 -> calls the GNU F77 cross-compiler with MPI
+\t mpif90 -> calls the GNU F90 cross-compiler with MPI
+ 
+WARNING: These commands will not generate executables for the 
+front-end nodes, load module ppc64 for help generating front-end 
+node targets.
+" 
+}
+    
+prepend-path PATH /bgsys/drivers/ppcfloor/comm/bin
+
+if [is-loaded genie] {    
+    setenv CC /bgsys/drivers/ppcfloor/comm/bin/mpicc
+    setenv CXX /bgsys/drivers/ppcfloor/comm/bin/mpicxx
+    setenv FC /bgsys/drivers/ppcfloor/comm/bin/mpif90
+    setenv F77 /bgsys/drivers/ppcfloor/comm/bin/mpif77
+    setenv F90 /bgsys/drivers/ppcfloor/comm/bin/mpif90
+}
+
+# The below magic is for Emacs editing convenience
+# Local Variables: 
+# mode: tcl
+# End:
+#
