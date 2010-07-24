@@ -192,14 +192,19 @@ class installer:
             u = unpacker(archive)
             members = u.getmembers()
 
-            tar_subdir = members[0]
+            tar_subpath = members[0]
 
-            if not tar_subdir.isdir():
-                err_msg = 'archive does not extract into a subdirectory, aborting'
-                self.log_error(err_msg)
-                raise Exception(err_msg)
-
-            subdir = tar_subdir.name
+            if not tar_subpath.isdir():
+                (head, tail) = os.path.split(tar_subpath.name)
+                while head:
+                    (head,tail) = os.path.split(head)
+                if not tail:
+                    err_msg = 'archive does not extract into a subdirectory, aborting'
+                    self.log.error(err_msg)
+                    raise Exception(err_msg)
+                subdir = tail
+            else:
+                subdir = tar_subpath.name
             
             for member in members:
                 u.extract(member,build_dir)
