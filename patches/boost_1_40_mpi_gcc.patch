@@ -1,0 +1,14 @@
+diff -crB boost_1_40_0/tools/build/v2/user-config.jam boost_1_40_0.bgp/tools/build/v2/user-config.jam
+*** boost_1_40_0/tools/build/v2/user-config.jam	2008-07-15 16:53:41.000000000 +0300
+--- boost_1_40_0.bgp/tools/build/v2/user-config.jam	2010-07-25 22:27:08.880590068 +0300
+***************
+*** 45,50 ****
+--- 45,52 ----
+  # Configure specific gcc version, giving alternative name to use.
+  # using gcc : 3.2 : g++-3.2 ;
+  
++ using gcc : 4.1.2 : /bgsys/drivers/ppcfloor/comm/bin/mpicxx ;
++ using mpi : : <find-shared-library>stdc++ ;
+  
+  # -------------------
+  # MSVC configuration.
