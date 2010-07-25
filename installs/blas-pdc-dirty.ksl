@@ -1,0 +1,56 @@
+# -*- python -*-
+# Hdf5 installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+
+base = installer()
+variants = []
+
+base.name='blas'
+base.version='pdc'
+base.release='1'
+base.license="commercial, public domain software built on IBM's ESSL"
+base.vendor='PDC Center for High Performance Computing/IBM'
+base.url='http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build'
+base.summary=                       """Basic Linear Algebra Subprograms
+based on PDC-KTH patches to BlueGene/P"""
+base.packager='aron'
+base.source='blas-pdc.tar.gz'
+base.category='math'
+base.description=\
+"""
+Basic Linear Algebra Subprograms (BLAS) is a de facto application
+programming interface standard for publishing libraries to perform
+basic linear algebra operations such as vector and matrix
+multiplication. They were first published in 1979, and are used to
+build larger packages such as LAPACK. Heavily used in high-performance
+computing, a highly optimized implementations of the BLAS interface is
+available on Shaheen through IBM's ESSL implementation with patches
+contributed by the PDC at KTH.
+"""
+
+base.paths    = []
+base.binaries = []
+base.includes=['']
+base.libdirs=['./lib']
+
+base.libs=['libblas.a']
+base.compile_modules=[]
+base.required_modules=[]
+base.notes=""
+
+s0 = install_source
+
+standard_install = s0,
+
+base.install_steps = standard_install
+base.tag = ''
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.compile_modules = []
+ppc450d.target_arch = 'ppc450d'
+variants.append(ppc450d)
+
+
+
