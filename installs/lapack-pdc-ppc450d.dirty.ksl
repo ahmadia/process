@@ -1,0 +1,61 @@
+# -*- python -*-
+# Hdf5 installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+
+base = installer()
+variants = []
+
+base.name='lapack'
+base.version='pdc'
+base.release='1'
+base.license="commercial, public domain software built on IBM's ESSL"
+base.vendor='PDC Center for High Performance Computing/IBM'
+base.url='http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build'
+base.summary=                       """Linear Algebra Package based on
+PDC-KTH patches to BlueGene/P""" 
+base.packager='aron'
+base.source='lapack-pdc-ppc450d.tar.gz'
+base.category='math'
+base.description=\
+"""LAPACK (Linear Algebra PACKage) is a software library for numerical
+linear algebra. It provides routines for solving systems of linear
+equations and linear least squares, eigenvalue problems, and singular
+value decomposition. It also includes routines to implement the
+associated matrix factorizations such as LU, QR, Cholesky and Schur
+decomposition. LAPACK was originally written in FORTRAN 77 and is now
+written in Fortran 90. The routines handle both real and complex
+matrices in both single and double precision.
+
+Heavily used in high-performance computing, a highly optimized
+implementations of the LAPACK interface is available on Shaheen
+through IBM's ESSL implementation with patches contributed by the PDC
+at KTH. 
+""" 
+
+base.paths    = []
+base.binaries = []
+base.includes=['']
+base.libdirs=['./lib']
+
+base.libs=['liblapack.a']
+base.compile_modules=[]
+base.required_modules=['blas']
+base.notes=""
+
+s0 = install_source
+
+standard_install = s0,
+
+base.install_steps = standard_install
+base.tag = ''
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.compile_modules = []
+ppc450d.target_arch = 'ppc450d'
+variants.append(ppc450d)
+
+#these are only available on the ppc450d
+
+
