@@ -5,31 +5,62 @@
 # KAUST Supercomputing Laboratories
 # shaheen-help@kaust.edu.sa
 
-module-whatis "environment initialization (resets user build environment flags)"
+module-whatis "environment initialization (user build environment flags)"
 
 proc ModulesHelp { } {
     puts stderr \
-"this module clears the user's build/runtime environment and is loaded first
+"this is loaded first to ensure environment variables are defined
 "
 }
 
 # tcl library paths are required for module execution
 module load tcl 
+global env
 
-setenv CFLAGS              ""
-setenv CXXFLAGS            ""
-setenv FFLAGS              ""
-setenv F77FLAGS            ""
-setenv F90FLAGS            ""
-setenv LDFLAGS             ""
-setenv LD_LIBRARY_PATH     "$::env(KSL_TCL_LD_LIBRARY_PATH)"
+if {![info exists env(CFLAGS)]} {
+    setenv CFLAGS              ""
+}
+if {![info exists env(CXXFLAGS)]} { 
+    setenv CXXFLAGS            ""
+}
+if {![info exists env(FFLAGS)]} { 
+    setenv FFLAGS              ""
+}
+if {![info exists env(F)]} { 
+    setenv F77FLAGS            ""
+}
+if {![info exists env(F)]} { 
+    setenv F90FLAGS            ""
+}
+if {![info exists env(LDFLAGS)]} { 
+    setenv LDFLAGS             ""
+}
 
-setenv KSL_CFLAGS          ""
-setenv KSL_CXXFLAGS        ""
-setenv KSL_FFLAGS          ""
-setenv KSL_F77FLAGS        ""
-setenv KSL_F90FLAGS        ""
-setenv KSL_LDFLAGS         ""
+if {[info exists env(LD_LIBRARY_PATH)]} { 
+    setenv LD_LIBRARY_PATH     "$::env(LD_LIBRARY_PATH):$::env(KSL_TCL_LD_LIBRARY_PATH)"
+} else {
+    setenv LD_LIBRARY_PATH     "$::env(KSL_TCL_LD_LIBRARY_PATH)"
+}
+
+if {![info exists env(KSL_CFLAGS)]} { 
+    setenv KSL_CFLAGS          ""
+}
+if {![info exists env(KSL_CXXFLAGS)]} { 
+    setenv KSL_CXXFLAGS        ""
+}
+if {![info exists env(KSL_FFLAGS)]} { 
+    setenv KSL_FFLAGS          ""
+}
+if {![info exists env(KSL_F)]} { 
+    setenv KSL_F77FLAGS        ""
+}
+if {![info exists env(KSL_F)]} { 
+    setenv KSL_F90FLAGS        ""
+}
+if {![info exists env(KSL_LDFLAGS)]} { 
+    setenv KSL_LDFLAGS         ""
+}
+
 setenv KSL_LD_LIBRARY_PATH "$::env(KSL_TCL_LD_LIBRARY_PATH)"
 
 # The below magic is for Emacs editing convenience
