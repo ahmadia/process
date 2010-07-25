@@ -126,6 +126,11 @@ class installer:
         else:
             raise Exception('unrecognized install source archive format: %s' % archive)
 
+    def install_source(self):
+        self.unpack_source()
+        self.log.info("installing files from %s into %s" % (self.source, self.target_dir))
+        self.shell_command('cp -R * %s' % (self.target_dir))
+
     def configure(self, args=''):
         target_dir = self.target_dir
         self.shell_command('./configure --prefix=%s %s' % (target_dir, args), 'configure') 
@@ -231,5 +236,6 @@ configure = installer.configure
 apply_patch = installer.apply_patch
 make = installer.make
 make_install = installer.make_install
+install_source = installer.install_source
 shell_command = installer.shell_command
 python = installer.python
