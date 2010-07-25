@@ -1,0 +1,250 @@
+diff -crB -I/scratch/aron/sandbox -I/home/aron/process -I'Installation point' -Iprefix= -I 'AMTAR =' -I 'MAKEINFO =' -I 'ROOT =' -I 'prefix = ' -I 'install_sh =' -I abs_ -I CONFIG_DATE -I 'Configured on' -x config.log hdf5-1.8.5/fortran/Makefile hdf5-1.8.5.bgp/fortran/Makefile
+*** hdf5-1.8.5/fortran/Makefile	2010-07-25 10:40:24.991006346 +0300
+--- hdf5-1.8.5.bgp/fortran/Makefile	2010-07-25 10:18:44.269429010 +0300
+***************
+*** 242,249 ****
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = mpirun -np $${NPROCS:=3}
+! RUNSERIAL = 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
+--- 242,249 ----
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = kslrun -n $${NPROCS:=3}
+! RUNSERIAL = kslrun -n 1 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
+diff -crB -I/scratch/aron/sandbox -I/home/aron/process -I'Installation point' -Iprefix= -I 'AMTAR =' -I 'MAKEINFO =' -I 'ROOT =' -I 'prefix = ' -I 'install_sh =' -I abs_ -I CONFIG_DATE -I 'Configured on' -x config.log hdf5-1.8.5/fortran/src/Makefile hdf5-1.8.5.bgp/fortran/src/Makefile
+*** hdf5-1.8.5/fortran/src/Makefile	2010-07-25 10:40:25.081006454 +0300
+--- hdf5-1.8.5.bgp/fortran/src/Makefile	2010-07-25 10:36:54.080751517 +0300
+***************
+*** 294,301 ****
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = mpirun -np $${NPROCS:=3}
+! RUNSERIAL = 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
+--- 294,301 ----
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = kslrun -n $${NPROCS:=3}
+! RUNSERIAL = kslrun -n 1 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
+diff -crB -I/scratch/aron/sandbox -I/home/aron/process -I'Installation point' -Iprefix= -I 'AMTAR =' -I 'MAKEINFO =' -I 'ROOT =' -I 'prefix = ' -I 'install_sh =' -I abs_ -I CONFIG_DATE -I 'Configured on' -x config.log hdf5-1.8.5/fortran/test/Makefile hdf5-1.8.5.bgp/fortran/test/Makefile
+*** hdf5-1.8.5/fortran/test/Makefile	2010-07-25 10:40:25.131006515 +0300
+--- hdf5-1.8.5.bgp/fortran/test/Makefile	2010-07-25 10:04:47.008403700 +0300
+***************
+*** 275,282 ****
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = mpirun -np $${NPROCS:=3}
+! RUNSERIAL = 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
+--- 275,282 ----
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = kslrun -n 1 $${NPROCS:=3}
+! RUNSERIAL = kslrun -n 1 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
+diff -crB -I/scratch/aron/sandbox -I/home/aron/process -I'Installation point' -Iprefix= -I 'AMTAR =' -I 'MAKEINFO =' -I 'ROOT =' -I 'prefix = ' -I 'install_sh =' -I abs_ -I CONFIG_DATE -I 'Configured on' -x config.log hdf5-1.8.5/libtool hdf5-1.8.5.bgp/libtool
+*** hdf5-1.8.5/libtool	2010-07-25 10:40:31.331014003 +0300
+--- hdf5-1.8.5.bgp/libtool	2010-07-25 10:04:02.188348627 +0300
+***************
+*** 269,281 ****
+  no_builtin_flag=""
+  
+  # How to pass a linker flag through the compiler.
+! wl=""
+  
+  # Additional compiler flags for building library objects.
+! pic_flag=" -DPIC"
+  
+  # Compiler flag to prevent dynamic linking.
+! link_static_flag=""
+  
+  # Does compiler simultaneously support -c and -o options?
+  compiler_c_o="yes"
+--- 269,281 ----
+  no_builtin_flag=""
+  
+  # How to pass a linker flag through the compiler.
+! wl="-Wl,"
+  
+  # Additional compiler flags for building library objects.
+! pic_flag=" -DPIC -qpic"
+  
+  # Compiler flag to prevent dynamic linking.
+! link_static_flag="-qstaticlink"
+  
+  # Does compiler simultaneously support -c and -o options?
+  compiler_c_o="yes"
+***************
+*** 302,312 ****
+  old_archive_from_expsyms_cmds=""
+  
+  # Commands used to build a shared archive.
+! archive_cmds="\$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
+  archive_expsym_cmds="echo \\\"{ global:\\\" > \$output_objdir/\$libname.ver~
+  	    cat \$export_symbols | sed -e \\\"s/\\\\(.*\\\\)/\\\\1;/\\\" >> \$output_objdir/\$libname.ver~
+  	    echo \\\"local: *; };\\\" >> \$output_objdir/\$libname.ver~
+! 	    \$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-version-script \${wl}\$output_objdir/\$libname.ver -o \$lib"
+  
+  # Commands used to build a loadable module if different from building
+  # a shared archive.
+--- 302,312 ----
+  old_archive_from_expsyms_cmds=""
+  
+  # Commands used to build a shared archive.
+! archive_cmds="\$CC -qmkshrobj \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
+  archive_expsym_cmds="echo \\\"{ global:\\\" > \$output_objdir/\$libname.ver~
+  	    cat \$export_symbols | sed -e \\\"s/\\\\(.*\\\\)/\\\\1;/\\\" >> \$output_objdir/\$libname.ver~
+  	    echo \\\"local: *; };\\\" >> \$output_objdir/\$libname.ver~
+! 	    \$CC -qmkshrobj \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-version-script \${wl}\$output_objdir/\$libname.ver -o \$lib"
+  
+  # Commands used to build a loadable module if different from building
+  # a shared archive.
+***************
+*** 8924,8936 ****
+  no_builtin_flag=""
+  
+  # How to pass a linker flag through the compiler.
+! wl=""
+  
+  # Additional compiler flags for building library objects.
+! pic_flag=""
+  
+  # Compiler flag to prevent dynamic linking.
+! link_static_flag=""
+  
+  # Does compiler simultaneously support -c and -o options?
+  compiler_c_o=""
+--- 8924,8936 ----
+  no_builtin_flag=""
+  
+  # How to pass a linker flag through the compiler.
+! wl="-Wl,"
+  
+  # Additional compiler flags for building library objects.
+! pic_flag="-qpic"
+  
+  # Compiler flag to prevent dynamic linking.
+! link_static_flag="-qstaticlink"
+  
+  # Does compiler simultaneously support -c and -o options?
+  compiler_c_o=""
+***************
+*** 9073,9085 ****
+  no_builtin_flag=""
+  
+  # How to pass a linker flag through the compiler.
+! wl=""
+  
+  # Additional compiler flags for building library objects.
+! pic_flag=""
+  
+  # Compiler flag to prevent dynamic linking.
+! link_static_flag=""
+  
+  # Does compiler simultaneously support -c and -o options?
+  compiler_c_o="yes"
+--- 9073,9085 ----
+  no_builtin_flag=""
+  
+  # How to pass a linker flag through the compiler.
+! wl="-Wl,"
+  
+  # Additional compiler flags for building library objects.
+! pic_flag="-qpic"
+  
+  # Compiler flag to prevent dynamic linking.
+! link_static_flag="-qstaticlink"
+  
+  # Does compiler simultaneously support -c and -o options?
+  compiler_c_o="yes"
+***************
+*** 9106,9116 ****
+  old_archive_from_expsyms_cmds=""
+  
+  # Commands used to build a shared archive.
+! archive_cmds="\$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
+  archive_expsym_cmds="echo \\\"{ global:\\\" > \$output_objdir/\$libname.ver~
+  	    cat \$export_symbols | sed -e \\\"s/\\\\(.*\\\\)/\\\\1;/\\\" >> \$output_objdir/\$libname.ver~
+  	    echo \\\"local: *; };\\\" >> \$output_objdir/\$libname.ver~
+! 	    \$CC -shared \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-version-script \${wl}\$output_objdir/\$libname.ver -o \$lib"
+  
+  # Commands used to build a loadable module if different from building
+  # a shared archive.
+--- 9106,9116 ----
+  old_archive_from_expsyms_cmds=""
+  
+  # Commands used to build a shared archive.
+! archive_cmds="\$CC -qnostaticlink \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
+  archive_expsym_cmds="echo \\\"{ global:\\\" > \$output_objdir/\$libname.ver~
+  	    cat \$export_symbols | sed -e \\\"s/\\\\(.*\\\\)/\\\\1;/\\\" >> \$output_objdir/\$libname.ver~
+  	    echo \\\"local: *; };\\\" >> \$output_objdir/\$libname.ver~
+! 	    \$CC -qnostaticlink \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-version-script \${wl}\$output_objdir/\$libname.ver -o \$lib"
+  
+  # Commands used to build a loadable module if different from building
+  # a shared archive.
+diff -crB -I/scratch/aron/sandbox -I/home/aron/process -I'Installation point' -Iprefix= -I 'AMTAR =' -I 'MAKEINFO =' -I 'ROOT =' -I 'prefix = ' -I 'install_sh =' -I abs_ -I CONFIG_DATE -I 'Configured on' -x config.log hdf5-1.8.5/src/Makefile hdf5-1.8.5.bgp/src/Makefile
+*** hdf5-1.8.5/src/Makefile	2010-07-25 10:40:23.201004184 +0300
+--- hdf5-1.8.5.bgp/src/Makefile	2010-07-25 09:59:54.368043736 +0300
+***************
+*** 309,316 ****
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = mpirun -np $${NPROCS:=3}
+! RUNSERIAL = 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
+--- 309,316 ----
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = kslrun -n $${NPROCS:=3} 
+! RUNSERIAL = kslrun -n 1 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
+diff -crB -I/scratch/aron/sandbox -I/home/aron/process -I'Installation point' -Iprefix= -I 'AMTAR =' -I 'MAKEINFO =' -I 'ROOT =' -I 'prefix = ' -I 'install_sh =' -I abs_ -I CONFIG_DATE -I 'Configured on' -x config.log hdf5-1.8.5/test/Makefile hdf5-1.8.5.bgp/test/Makefile
+*** hdf5-1.8.5/test/Makefile	2010-07-25 10:40:23.261004256 +0300
+--- hdf5-1.8.5.bgp/test/Makefile	2010-07-25 10:04:27.308379496 +0300
+***************
+*** 521,528 ****
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = mpirun -np $${NPROCS:=3}
+! RUNSERIAL = 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
+--- 521,528 ----
+  PTHREAD = 
+  RANLIB = ranlib
+  ROOT = /scratch/aron/sandbox/process/installs/builddir_ppc64/hdf5-1.8.5
+! RUNPARALLEL = kslrun -n $${NPROCS:=3}
+! RUNSERIAL = kslrun -n 1 
+  R_INTEGER = 
+  R_LARGE = 
+  SEARCH = VPATH=$(srcdir) $(top_builddir)/src $(top_srcdir)/src
