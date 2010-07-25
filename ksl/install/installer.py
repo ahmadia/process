@@ -174,18 +174,46 @@ class installer:
             err_msg = "command %s failed, see log for details" % command
             log.error(err_msg)
             raise Exception(err_msg)
+        
+    def templated_shell_command(self, command_template, log_file=''):
+        if log_file is not '':
+            log = logging.getLogger('ksl.installer.package.%s' % log_file)
+        else:
+            log = self.log
+        log.info('executing templated shell command')
+        log.info(command_template.template)
+        command = command_template.substitute(vars(self))
+        log.info(command)
+        p = subprocess.Popen(command, shell=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+
+        while p.returncode is None:
+            p.poll()
+            out = p.stdout.readline()
+            log.info(out)
+            
+        err_code = p.returncode
+        if err_code:
+            err_msg = "command %s failed, see log for details" % command
+            log.error(err_msg)
+            raise Exception(err_msg)
 
     def module(self, module_args):
         p = subprocess.Popen('%s python %s' % (self.module_cmd,module_args),
                              shell=True, stdout=subprocess.PIPE ,stderr=subprocess.STDOUT)
         (commands, ignore) = p.communicate()
 
+        err_msg = "Error issuing module command: %s\n%s" % (module_args, commands)
         if p.returncode is not None and p.returncode % 256:
-            err = "Error issuing module command %s\n" % (module_args)
-            self.log.error(commands)
-            raise BuildError("unexpected failure issuing module command: %s" % module_args)
-        exec commands
-
+            self.log.error(err_msg)
+            raise Exception(err_msg)
+        try:
+            exec commands
+        except Exception,err:
+            self.log.error(err_msg)
+            raise Exception(err_msg)
+        
     def find_file(self, filename, search_path):
         file_found = False
         paths = search_path.split(pathsep)
@@ -238,4 +266,5 @@ make = installer.make
 make_install = installer.make_install
 install_source = installer.install_source
 shell_command = installer.shell_command
+templated_shell_command = installer.templated_shell_command
 python = installer.python
