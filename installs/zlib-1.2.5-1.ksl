@@ -59,6 +59,7 @@ ppc450d.build_host = 'ppc64'
 ppc450d.compile_modules = ['ibm']
 ppc450d.target_arch = 'ppc450d'
 ppc450d.install_steps = patched_install_xlc
+ppc450d.add_rpaths = True
 variants.append(ppc450d)
 
 x86_64 = copy(base)

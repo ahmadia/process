@@ -1,0 +1,94 @@
+# -*- python -*-
+# Hdf5 installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+
+base = installer()
+variants = []
+
+base.name='hdf5'
+base.version='1.8.5'
+base.release='1'
+base.license='BSD-like, see ftp://ftp.hdfgroup.org/HDF5/current/src/unpacked/COPYING'
+base.vendor='HDF Group'
+base.url='http://www.hdfgroup.org/HDF5/'
+base.summary='Hiearchical Data Format, version 5'
+base.packager='aron'
+base.source='hdf5-1.8.5.tar.gz'
+base.category='i/o'
+base.description=\
+"""HDF5 is a unique technology suite that makes possible the management of extremely large and complex data collections.
+
+The HDF5 technology suite includes:
+
+* A versatile data model that can represent very complex data objects
+  and a wide variety of metadata. 
+* A completely portable file format with no limit on the number or
+  size of data objects in the collection. 
+* A software library that runs on a range of computational platforms,
+  from laptops to massively parallel systems, and implements a
+  high-level API with C, C++, Fortran 90, and Java interfaces.  
+* A rich set of integrated performance features that allow for access
+  time and storage space optimizations. 
+* Tools and applications for managing, manipulating, viewing, and
+  analyzing the data in the collection.
+"""
+
+base.paths    = ['./bin']
+
+# note the indentation required for getting a pretty output in module multi-line listing
+base.binaries = ["""gif2h5, h5copy, h5diff, h5import, h5ls, h5pcc, h5pfc, h5repack,
+                h5stat, ph5diff, h52gif, h5debug, h5dump, h5jam, h5mkgrp,
+                h5perf, h5redeploy, h5repart, h5unjam"""]
+base.includes=['./include']
+base.libdirs=['./lib']
+
+# these libraries all appear to be independent
+base.libs=['libhdf5_fortran.a, libhdf5.a, libhdf5h1_fortran.a, libhdf5_h1.a']
+base.compile_modules=[]
+base.required_modules=['zlib']
+base.notes=\
+"""
+Build Notes:
+* zlib compression support
+* parallel support
+* GPFS support
+* fortran support
+* direct-vfd disabled
+* c++ disabled
+
+Warning: The HDF5 binaries do not work on the BlueGene front-end nodes"""
+
+s0 = load_modules
+s1 = unpack_source
+s2 = (configure, '--enable-parallel --enable-fortran --enable-direct-vfd=no --enable-gpfs --enable-cxx=no')
+p1 = apply_patch, 'hdf5_shared_xlc.patch'
+s3 = make
+s4 = make_install
+
+patched_install = (s0, s1, s2, p1, s3, s4) 
+standard_install = (s0, s1, s2, s3, s4) 
+
+base.install_steps = standard_install
+base.tag = ''
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.compile_modules = ['ibm']
+ppc450d.target_arch = 'ppc450d'
+ppc450d.install_steps = patched_install
+variants.append(ppc450d)
+
+x86_64 = copy(base)
+x86_64.build_host = 'x86_64'
+x86_64.compile_modules = ['gnu']
+x86_64.target_arch = 'x86_64'
+variants.append(x86_64)
+
+x86_64_intel = copy(x86_64)
+x86_64_intel.compile_modules = ['intel']
+x86_64_intel.tag = '-intel'
+#this is failing in the configure stage currently
+#variants.append(x86_64_intel)
+
+

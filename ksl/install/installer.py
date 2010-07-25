@@ -61,8 +61,13 @@ class installer:
         if not self.libs:
             self.libs_command  = ""
         else:
-            self.libs_command  = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
-                                 "".join(" %s" % (lib_strip(l)) for l in self.libs)
+            if 'add_rpaths' in dir(self) and self.add_rpaths:
+                self.libs_command  = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
+                                     " -R"+" -R".join(add_root(p) for p in self.libdirs) + \
+                                     "".join(" %s" % (lib_strip(l)) for l in self.libs)
+            else:
+                self.libs_command  = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
+                                     "".join(" %s" % (lib_strip(l)) for l in self.libs)
             
         self.modules_pretty   = " ".join(m for m in self.required_modules)
         if not self.required_modules:
