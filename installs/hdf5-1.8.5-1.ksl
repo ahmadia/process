@@ -44,7 +44,7 @@ base.includes=['./include']
 base.libdirs=['./lib']
 
 # these libraries all appear to be independent
-base.libs=['libhdf5_fortran.a', 'libhdf5.a', 'libhdf5h1_fortran.a', 'libhdf5_h1.a']
+base.libs=['libhdf5_fortran.a', 'libhdf5.a', 'libhdf5hl_fortran.a', 'libhdf5_hl.a']
 base.compile_modules=[]
 base.required_modules=['zlib']
 base.notes=\
