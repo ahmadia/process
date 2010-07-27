@@ -61,19 +61,18 @@ class installer:
         lib_strip = lambda l: splitext(l)[0].replace('lib','-l')
         if not self.libs:
             self.mod_libs     = ""
+            self.mod_ldflags  = ""
         else:
             self.mod_libs     = "".join(" %s" % (lib_strip(l)) for l in self.libs)
-            if 'add_rpaths' in dir(self) and self.add_rpaths:
-                self.mod_ldflags  = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
-                                    " -R"+" -R".join(add_root(p) for p in self.libdirs) 
-            else:
-                self.mod_ldflags  = "-L"+" -L".join(add_root(p) for p in self.libdirs)
+            self.mod_ldflags  = "-L"+" -L".join(add_root(p) for p in self.libdirs)
             
         self.modules_pretty   = " ".join(m for m in self.required_modules)
         if not self.required_modules:
             self.load_required_modules = ""
         else:
             self.load_required_modules = "module load " + " ".join(m for m in self.required_modules)
+        if 'mod_magic' not in dir(self):
+            self.mod_magic = ''
 
         # oh man is this dirty        
         module_data = template.substitute(dict(getmembers(self)))

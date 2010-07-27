@@ -42,36 +42,39 @@ $notes
 }
 
 if [is-loaded genie] {
-    setenv CFLAGS           "$$::env(CFLAGS)   $mod_includes"
-    setenv CXXFLAGS         "$$::env(CXXFLAGS) $mod_includes"
-    setenv FFLAGS           "$$::env(FFLAGS)   $mod_includes"
-    setenv FCFLAGS          "$$::env(FCFLAGS)  $mod_includes"
-    setenv LDFLAGS          "$$::env(LDFLAGS)  $mod_ldflags"
-    setenv LIBS             "$$::env(LIBS)     $mod_libs"
-    setenv LDLIBS           "$$::env(LDLIBS)   $mod_libs"
+    setenv CFLAGS "$$::env(CFLAGS) $mod_includes"
+    setenv CXXFLAGS "$$::env(CXXFLAGS) $mod_includes"
+    setenv FFLAGS "$$::env(FFLAGS) $mod_includes"
+    setenv FCFLAGS "$$::env(FCFLAGS) $mod_includes"
+    setenv LDFLAGS "$$::env(LDFLAGS) $mod_ldflags"
+    setenv LIBS "$$::env(LIBS) $mod_libs"
+    setenv LDLIBS "$$::env(LDLIBS) $mod_libs"
 
     prepend-path LD_LIBRARY_PATH "$mod_libpaths"
 } else {
-    setenv KSL_CFLAGS           "$$::env(KSL_CFLAGS)   $mod_includes"
-    setenv KSL_CXXFLAGS         "$$::env(KSL_CXXFLAGS) $mod_includes"
-    setenv KSL_FFLAGS           "$$::env(KSL_FFLAGS)   $mod_includes"
-    setenv KSL_FCFLAGS          "$$::env(KSL_FCFLAGS)  $mod_includes"
-    setenv KSL_LDFLAGS          "$$::env(KSL_LDFLAGS)  $mod_ldflags"
-    setenv KSL_LDLIBS           "$$::env(KSL_LDLIBS)   $mod_libs"
-    setenv KSL_LIBS             "$$::env(KSL_LIBS)     $mod_libs"
+    setenv KSL_CFLAGS "$$::env(KSL_CFLAGS) $mod_includes"
+    setenv KSL_CXXFLAGS "$$::env(KSL_CXXFLAGS) $mod_includes"
+    setenv KSL_FFLAGS "$$::env(KSL_FFLAGS) $mod_includes"
+    setenv KSL_FCFLAGS "$$::env(KSL_FCFLAGS) $mod_includes"
+    setenv KSL_LDFLAGS "$$::env(KSL_LDFLAGS) $mod_ldflags"
+    setenv KSL_LDLIBS "$$::env(KSL_LDLIBS) $mod_libs"
+    setenv KSL_LIBS "$$::env(KSL_LIBS) $mod_libs"
 
     prepend-path KSL_LD_LIBRARY_PATH "$mod_libpaths"
 }
 
-setenv KSL_${UNAME}_CFLAGS           "$mod_includes"
-setenv KSL_${UNAME}_CXXFLAGS         "$mod_includes"
-setenv KSL_${UNAME}_FFLAGS           "$mod_includes"
-setenv KSL_${UNAME}_FCFLAGS          "$mod_includes"
-setenv KSL_${UNAME}_LDFLAGS          "$mod_ldflags"
-setenv KSL_${UNAME}_LIBS             "$mod_libs"
+setenv KSL_${UNAME}_CFLAGS "$mod_includes"
+setenv KSL_${UNAME}_CXXFLAGS "$mod_includes"
+setenv KSL_${UNAME}_FFLAGS "$mod_includes"
+setenv KSL_${UNAME}_FCFLAGS "$mod_includes"
+setenv KSL_${UNAME}_LDFLAGS "$mod_ldflags"
+setenv KSL_${UNAME}_LIBS "$mod_libs"
 
-prepend-path KSL_${UNAME}_LD_LIBRARY_PATH  "$mod_libpaths"
-prepend-path PATH                   "$mod_paths"
+prepend-path KSL_${UNAME}_LD_LIBRARY_PATH "$mod_libpaths"
+prepend-path PATH "$mod_paths"
+
+# reserved user variable for modifying the environment
+$mod_magic
 
 # required modules (if needed)
 $load_required_modules

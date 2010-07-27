@@ -13,8 +13,6 @@ proc ModulesHelp { } {
 "
 }
 
-# tcl library paths are required for module execution
-module load tcl 
 global env
 
 if {![info exists env(CFLAGS)]} {
@@ -45,10 +43,8 @@ if {![info exists env(LIBS)]} {
     setenv LIBS                ""
 }
 
-if {[info exists env(LD_LIBRARY_PATH)]} { 
-    setenv LD_LIBRARY_PATH     "$::env(LD_LIBRARY_PATH):$::env(KSL_TCL_LD_LIBRARY_PATH)"
-} else {
-    setenv LD_LIBRARY_PATH     "$::env(KSL_TCL_LD_LIBRARY_PATH)"
+if {![info exists env(LD_LIBRARY_PATH)]} { 
+    setenv LD_LIBRARY_PATH     ""
 }
 
 if {![info exists env(KSL_CFLAGS)]} { 
@@ -75,8 +71,9 @@ if {![info exists env(KSL_LIBS)]} {
     setenv KSL_LIBS            ""
 }
 
-
-setenv KSL_LD_LIBRARY_PATH "$::env(KSL_TCL_LD_LIBRARY_PATH)"
+if {![info exists env(KSL_LD_LIBRARY_PATH)]} { 
+    setenv KSL_LD_LIBRARY_PATH ""
+}
 
 # The below magic is for Emacs editing convenience
 # Local Variables: 
