@@ -9,9 +9,6 @@
 
 module-whatis "configures usage of $summary"
 
-# prerequisites
-$modules_command
-
 proc ModulesHelp { } {
     puts stderr \
 "This module configures usage of the $summary
@@ -26,16 +23,15 @@ libraries     : $libs_pretty
 binaries      : $binaries_pretty
 paths         : $paths_pretty
 
-These prerequisite modules are loaded: 
+These prerequisite modules are loaded after this module: 
 $modules_pretty
 
 These commands should now compile/link with $name support:
 
-    \$${KSL_CC}   \$${KSL_${UNAME}_CFLAGS}   file.c   \$${KSL_${UNAME}_LDFLAGS}
-    \$${KSL_CXX}  \$${KSL_${UNAME}_CXXFLAGS} file.cxx \$${KSL_${UNAME}_LDFLAGS}
-    \$${KSL_F77}  \$${KSL_${UNAME}_F77FLAGS} file.f   \$${KSL_${UNAME}_LDFLAGS}
-    \$${KSL_F90}  \$${KSL_${UNAME}_F90FLAGS} file.f90 \$${KSL_${UNAME}_LDFLAGS}
-    \$${KSL_FC}   \$${KSL_${UNAME}_FFFLAGS}  file.f   \$${KSL_${UNAME}_LDFLAGS}
+    \$${KSL_CC}   \$${KSL_${UNAME}_CFLAGS}   file.c   \$${KSL_${UNAME}_LDFLAGS} \$${KSL_${UNAME}_LIBS}
+    \$${KSL_CXX}  \$${KSL_${UNAME}_CXXFLAGS} file.cxx \$${KSL_${UNAME}_LDFLAGS} \$${KSL_${UNAME}_LIBS}
+    \$${KSL_F77}  \$${KSL_${UNAME}_FFLAGS}   file.f   \$${KSL_${UNAME}_LDFLAGS} \$${KSL_${UNAME}_LIBS}
+    \$${KSL_FC}   \$${KSL_${UNAME}_FCFLAGS}  file.f90 \$${KSL_${UNAME}_LDFLAGS} \$${KSL_${UNAME}_LIBS}
 
 If you have loaded the genie module, the corresponding base
 environment variables (e.g. CFLAGS for KSL_${UNAME}_CFLAGS) will also be
@@ -46,24 +42,36 @@ $notes
 }
 
 if [is-loaded genie] {
-    setenv CFLAGS           "$$::env(CFLAGS)   $includes_command"
-    setenv CXXFLAGS         "$$::env(CXXFLAGS) $includes_command"
-    setenv F77FLAGS         "$$::env(F77FLAGS) $includes_command"
-    setenv F90FLAGS         "$$::env(F90FLAGS) $includes_command"
-    setenv FFLAGS           "$$::env(FFLAGS)   $includes_command"
-    setenv LDFLAGS          "$$::env(LDFLAGS)  $libs_command"
+    setenv CFLAGS           "$$::env(CFLAGS)   $mod_includes"
+    setenv CXXFLAGS         "$$::env(CXXFLAGS) $mod_includes"
+    setenv FFLAGS           "$$::env(FFLAGS)   $mod_includes"
+    setenv FCFLAGS          "$$::env(FCFLAGS)  $mod_includes"
+    setenv LDFLAGS          "$$::env(LDFLAGS)  $mod_ldflags"
+    setenv LIBS             "$$::env(LIBS)     $mod_libs"
+    setenv LDLIBS           "$$::env(LDLIBS)   $mod_libs"
 
-    prepend-path LD_LIBRARY_PATH "$libpaths_command"
+    prepend-path LD_LIBRARY_PATH "$mod_libpaths"
+} else {
+    setenv KSL_CFLAGS           "$$::env(KSL_CFLAGS)   $mod_includes"
+    setenv KSL_CXXFLAGS         "$$::env(KSL_CXXFLAGS) $mod_includes"
+    setenv KSL_FFLAGS           "$$::env(KSL_FFLAGS)   $mod_includes"
+    setenv KSL_FCFLAGS          "$$::env(KSL_FCFLAGS)  $mod_includes"
+    setenv KSL_LDFLAGS          "$$::env(KSL_LDFLAGS)  $mod_ldflags"
+    setenv KSL_LDLIBS           "$$::env(KSL_LDLIBS)   $mod_libs"
+    setenv KSL_LIBS             "$$::env(KSL_LIBS)     $mod_libs"
+
+    prepend-path KSL_LD_LIBRARY_PATH "$mod_libpaths"
 }
 
-setenv KSL_${UNAME}_CFLAGS           "$includes_command"
-setenv KSL_${UNAME}_CXXFLAGS         "$includes_command"
-setenv KSL_${UNAME}_F77FLAGS         "$includes_command"
-setenv KSL_${UNAME}_F90FLAGS         "$includes_command"
-setenv KSL_${UNAME}_FFLAGS           "$includes_command"
-setenv KSL_${UNAME}_LDFLAGS          "$libs_command"
+setenv KSL_${UNAME}_CFLAGS           "$mod_includes"
+setenv KSL_${UNAME}_CXXFLAGS         "$mod_includes"
+setenv KSL_${UNAME}_FFLAGS           "$mod_includes"
+setenv KSL_${UNAME}_FCFLAGS          "$mod_includes"
+setenv KSL_${UNAME}_LDFLAGS          "$mod_ldflags"
+setenv KSL_${UNAME}_LIBS             "$mod_libs"
 
-prepend-path KSL_${UNAME}_LD_LIBRARY_PATH  "$libpaths_command"
+prepend-path KSL_${UNAME}_LD_LIBRARY_PATH  "$mod_libpaths"
+prepend-path PATH                   "$mod_paths"
 
-setenv PATH                   "$paths_command"
-
+# required modules (if needed)
+$load_required_modules

@@ -42,38 +42,38 @@ class installer:
         self.binaries_pretty  = ", ".join(b for b in self.binaries)
         self.paths_pretty     = ", ".join(add_root(p) for p in self.paths)
         if not self.paths:
-            self.paths_command = "$::env(PATH)"
+            self.mod_paths    = ""
         else:
-            self.paths_command    = "$::env(PATH):" + ":".join(add_root(p) for p in self.paths)
+            self.mod_paths    = ":".join(add_root(p) for p in self.paths)
 
         self.paths_fake       = "\$(PATH):" + ":".join(add_root(p) for p in self.paths)
         
         self.includes_pretty  = ", ".join(add_root(p) for p in self.includes)
         if not self.includes:
-            self.includes_command = ""
+            self.mod_includes = ""
         else:
-            self.includes_command = "-I"+" -I".join(add_root(p) for p in self.includes)
+            self.mod_includes = "-I"+" -I".join(add_root(p) for p in self.includes)
         self.libdirs_pretty   = ", ".join(add_root(p) for p in self.libdirs)
         self.libs_pretty      = ", ".join(l for l in self.libs)
 
+        self.mod_libpaths  = ":".join(add_root(p) for p in self.libdirs)
+
         lib_strip = lambda l: splitext(l)[0].replace('lib','-l')
-        self.libpaths_command  = ":".join(add_root(p) for p in self.libdirs)
         if not self.libs:
-            self.libs_command  = ""
+            self.mod_libs     = ""
         else:
+            self.mod_libs     = "".join(" %s" % (lib_strip(l)) for l in self.libs)
             if 'add_rpaths' in dir(self) and self.add_rpaths:
-                self.libs_command  = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
-                                     " -R"+" -R".join(add_root(p) for p in self.libdirs) + \
-                                     "".join(" %s" % (lib_strip(l)) for l in self.libs)
+                self.mod_ldflags  = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
+                                    " -R"+" -R".join(add_root(p) for p in self.libdirs) 
             else:
-                self.libs_command  = "-L"+" -L".join(add_root(p) for p in self.libdirs) + \
-                                     "".join(" %s" % (lib_strip(l)) for l in self.libs)
+                self.mod_ldflags  = "-L"+" -L".join(add_root(p) for p in self.libdirs)
             
         self.modules_pretty   = " ".join(m for m in self.required_modules)
         if not self.required_modules:
-            self.modules_command = ""
+            self.load_required_modules = ""
         else:
-            self.modules_command  = "module load " + " ".join(m for m in self.required_modules)
+            self.load_required_modules = "module load " + " ".join(m for m in self.required_modules)
 
         # oh man is this dirty        
         module_data = template.substitute(dict(getmembers(self)))
