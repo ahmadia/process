@@ -1,0 +1,74 @@
+# -*- python -*-
+# Petsc installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+from string import Template
+
+base = installer()
+variants = []
+
+base.name='petsc'
+base.version='3.1.3'
+base.release='1'
+base.license='BSD-like'
+base.vendor='Argonne National Laboratories - MCS Division'
+base.url='http://www.mcs.anl.gov/petsc/petsc-as/'
+base.summary='Portable Extensible Toolkit for Scientific Computation'
+base.packager='aron'
+base.source='petsc-lite-3.1-p3.tar.gz'
+base.category='math'
+base.description=\
+"""PETSc, pronounced PET-see (the S is silent), is a suite of data
+structures and routines for the scalable (parallel) solution of
+scientific applications modeled by partial differential equations.  It
+employs the MPI standard for parallelism.    
+"""
+
+base.paths    = []
+base.binaries = []
+base.includes=['./include']
+base.libdirs=['./lib']
+
+# these libraries all appear to be independent
+base.libs=['libpetsc.a']
+base.compile_modules=[]
+base.required_modules=['hdf5','parmetis','blas','lapack']
+base.notes=\
+"""
+Build Notes:
+* hdf5 support
+* parmetis support
+* C++ support
+* Fortran support
+* uses BLAS/LAPACK built on ESSL (with multithreading support)
+"""
+
+s0 = load_modules
+s1 = unpack_source
+p0 = apply_patch, 'petsc_shaheen_xlc.patch'
+s2 = (shell_command, 'export PETSC_DIR=`pwd` && export PETSC_ARCH=bgp-xlc')
+s3 = (templated_shell_command,
+      Template('chmod +x bgp-xlc.py && PLIBS="$$LDFLAGS $$LIBS" && ./bgp-xlc.py --with-hdf5=1 --with-parmetis=1 --prefix=$target_dir --with-clanguage=cxx --cflags=$$CFLAGS --CXXFLAGS=$$CXXFLAGS --FFLAGS=$$FFLAGS --FCFLAGS=$$FCFLAGS --LIBS="$$PLIBS" --CC=$$CC --CXX=$$CXX --FC=$$FC --with-blas-lib=$${KSL_BLAS_LD_LIBRARY_PATH}/libblas.a --with-lapack-lib=$${KSL_LAPACK_LD_LIBRARY_PATH}/liblapack.a --with-hdf5-dir=$${KSL_HDF5_DIR} --with-parmetis-dir=$${KSL_PARMETIS_DIR}'))
+s4 = make
+s5 = make_install
+
+xlc_install = (s0, s1, p0, s2, s3, s4, s5) 
+standard_install = (s0, s1, s2, s3, s4) 
+
+base.install_steps = standard_install
+base.tag = ''
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.compile_modules = ['ibm']
+ppc450d.target_arch = 'ppc450d'
+ppc450d.install_steps = xlc_install
+ppc450d.mod_magic = \
+'''
+setenv PETSC_DIR "$::env(KSL_PETSC_DIR)"
+setenv PETSC_ARCH bgp-xlc
+'''
+variants.append(ppc450d)
+
+
+
