@@ -35,7 +35,9 @@ base.paths    = ['./bin']
 base.binaries = ['tclsh8.5']
 base.includes=['./include']
 base.libdirs=['./lib']
-base.libs=['libtcl8.5.so', 'libtclstub8.5.a']
+#this is a hack until I figure out how to do ppc64 modules correctly
+base.libs=[]
+#base.libs=['libtcl8.5.so', 'libtclstub8.5.a']
 base.compile_modules=['gnu']
 base.required_modules=[]
 base.notes=""

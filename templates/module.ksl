@@ -69,6 +69,7 @@ setenv KSL_${UNAME}_FFLAGS "$mod_includes"
 setenv KSL_${UNAME}_FCFLAGS "$mod_includes"
 setenv KSL_${UNAME}_LDFLAGS "$mod_ldflags"
 setenv KSL_${UNAME}_LIBS "$mod_libs"
+setenv KSL_${UNAME}_DIR "$target_dir"
 
 prepend-path KSL_${UNAME}_LD_LIBRARY_PATH "$mod_libpaths"
 prepend-path PATH "$mod_paths"

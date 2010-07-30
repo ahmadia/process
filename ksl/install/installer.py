@@ -138,12 +138,12 @@ class installer:
         patch = self.find_file(patch_name, self.patch_paths)
         self.shell_command('patch --verbose -p1 -i %s' % (patch), 'patch')
     
-    def make(self):
+    def make(self, args=''):
         if self.target_arch == 'ppc450d' or self.target_arch == 'x86_64':
             self.shell_command('${CC} -compile-info')
         else:
             self.shell_command('${CC} -v')
-        self.shell_command('make', 'make')
+        self.shell_command('make %s' % (args), 'make')
     
     def make_install(self):
         self.shell_command('make install', 'make')
