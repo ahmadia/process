@@ -84,24 +84,9 @@ class installer:
         handle.close()
         
     def unload_modules(self):
-        self.log.info("unloading module: genie")
-
-        self.module('unload genie')
-
-        for module in self.required_modules:
-            try:
-                self.log.info("unloading module: %s" % module)
-                self.module("unload %s" % module)
-            except:
-                self.log.info("ignoring error unloading module: %s" % module)
-                pass
-        for module in self.compile_modules:
-            try:
-                self.log.info("unloading module: %s" % module)
-                self.module("unload %s" % module)
-            except:
-                self.log.info("ignoring error unloading module: %s" % module)
-                pass
+        self.log.info("clearing modules")
+        self.module('purge')
+        self.module('load init genie')
 
     def load_modules(self):
         # always load genie when using modules to get common environment variables
