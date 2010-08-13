@@ -1,33 +1,80 @@
 #!/usr/bin/env python
 
-import os
-import re
-import sys
-import select
-import subprocess
-import logging
-from optparse import OptionParser
-import time
-import string
+import os, re, sys, select, subprocess, logging, time, string, optparse
+import cfgparse, tempfile, shutil, inspect
 
 def main():
-    parser = OptionParser()
-    parser.add_option("-v", "--verbose",
-                      action="store_true", dest="verbose", default=False,
-                      help="print informational status messages to stdout")
-    parser.add_option("-p", "--partition_size",
-                      action="store", dest="partition_size", default=128,
-                      help="size of the BGP partition to request")
-    parser.add_option("-n", "--np",
-                      action="store", dest="np", default=1,
-                      help="number of MPI processes to request")
-    parser.add_option("-d", "--debug",
-                      action="store_true", dest="debug", default=False)
-    parser.add_option("-a", "--account",
-                      action="store", dest="account_no", default="k01",
-                      help="account number to use (defaults to k01)")
+    o = optparse.OptionParser()
+    c = cfgparse.ConfigParser(allow_py=True)
 
-    (options, args) = parser.parse_args()
+    c.add_optparse_help_option(o)
+
+
+    ### Run Options
+    o.add_option("-v", "--verbose", action="store_true", 
+                 help="print informational status messages to stdout")
+    c.add_option('verbose')
+    
+    o.add_option("-d", "--debug", action="store_true",
+                 help="enable debug mode (developer use)")
+    c.add_option('debug')
+
+    o.add_option("-r", "--no_std_redirect", action="store_true",
+                 help="disable stdout/stderr redirection")
+    c.add_option('no_std_redirect')
+    
+    o.add_option("-k", "--keep_ll_file", action="store_true",
+                 help="do not delete LoadLeveler file after run")
+    c.add_option('keep_ll_file')
+
+    o.add_option('--no_notify', action="store_true",
+                 help="do not send a notification email when job completes")
+
+    ### LoadLeveler/MPI Options
+    o.add_option("--prefix", type='string',
+                 help='prefix for output files (only meaningful if no_std_redirect is enabled')
+    c.add_option('prefix')
+
+    o.add_option("-p", "--partition_size", type='int', 
+                 help="size of the BGP partition to request")
+    c.add_option('partition_size')
+    
+    o.add_option("-j", "--job_name", type='string',
+                 help="job_name as passed to LoadLeveler")
+    c.add_option('job_name')
+
+    o.add_option('-t', "--wall_time", type='string',
+                 help="job wall_time as passed to LoadLeveler")
+    c.add_option('wall_time')
+
+    o.add_option('-c', "--ll_class", type='string',
+                 help="job class as passed to LoadLeveler")
+    c.add_option('ll_class')
+      
+    o.add_option("-a", "--account", type='string',
+                 help="account number to use (defaults to k01)")
+    c.add_option('account')
+
+    o.add_option("-n", "--np", type='int',
+                 help="number of MPI processes to request")
+    c.add_option('np')
+
+    o.add_option("-m", "--mode", type='string',
+                 help="MPI mode to specify (i.e. VN, DUAL, SMP)")
+    c.add_option('mode')
+
+    # check /opt/share/ksl/config/kslrun.py, ~/.kslrun.py, and ./.kslrun.py
+    sysfile = '/opt/share/ksl/config/kslrun.py'
+    if os.path.isfile(sysfile):
+        c.add_file(sysfile)
+    homefile = os.path.expanduser('~/.kslrun.py')
+    if os.path.isfile(homefile):
+        c.add_file(homefile)
+    herefile = '.kslrun.py'
+    if os.path.isfile(herefile):
+        c.add_file(herefile)
+    
+    (options, args) = c.parse(o)
 
     if options.debug:
         logging.basicConfig(level=logging.DEBUG,
@@ -41,71 +88,105 @@ def main():
 
     logger = logging.getLogger('ksl_srun')
 
-    logger.info("attempting to delete old pipes")
-    for file in "./job_out", "./job_err", "./job_done":
+    logger.debug("options")
+    logger.debug(options)
+    logger.debug("args")
+    logger.debug(args)
+
+    if not args:
+        raise Exception("No executable was specified to kslrun!")
+
+    tempdir = tempfile.mkdtemp()
+
+    try:
+        if not options.no_std_redirect:
+            logger.info("setting up job_out/job_err named pipes in temporary directory")
+            job_out_name = os.path.join(tempdir, "job_out")
+            job_err_name = os.path.join(tempdir, "job_err")
+            
+            os.mkfifo(job_out_name)
+            os.mkfifo(job_err_name)
+            
+            job_out_pipe = os.open(job_out_name, (os.O_RDONLY|os.O_NONBLOCK))
+            job_err_pipe = os.open(job_err_name, (os.O_RDONLY|os.O_NONBLOCK))
+            time.sleep(1) #loadleveler is a piece of shit
+            job_done_name = os.path.join(tempdir, "job_done")
+            done_command = 'touch ' + job_done_name
+        else:
+            job_out_name = options.prefix+'.out'
+            job_err_name = options.prefix+'.err'
+            done_command = ''
+            
+        logger.info("setting up LoadLeveler submission script")    
+
+        ll_dict = dict(inspect.getmembers(options))
+        ll_dict['command'] = string.join(args)
+        ll_dict['job_out_name'] = job_out_name
+        ll_dict['job_err_name'] = job_err_name
+        ll_dict['done_command'] = done_command
+
+        if options.no_notify:
+            ll_dict['notification'] = 'never'
+        else:
+            ll_dict['notification'] = 'always'
+
+        llfilename = setup_ll_file(options, ll_dict, tempdir)
+        logger.info("submitting to LoadLeveler")
+        (llout, llerr) = call_command("llsubmit " + llfilename)
+        logger.info(llout)
+    #    if len(llerr):
+            # silent ignore currently
+    #        logger.error(llerr)
+
+        longllqid = llout.split(' ')[1]
+        assert 'fen1-a.shaheen.kaust.edu.sa' in longllqid, "Unable to determine llq job id from output, %s" % llout
+        llqid = longllqid.replace("shaheen.kaust.edu.sa.","") + ".0"
+
+        if not options.no_std_redirect:
+            logger.info("following job_out/job_err named pipes and watching for job_done file")
+            job_poll = select.poll()
+            job_poll.register(job_out_pipe)
+            job_poll.register(job_err_pipe)
+            
+            watch_pipes(job_poll, job_out_pipe, job_err_pipe,
+                        job_done_name, llqid)
+        else:
+            logger.info("job submitted")
+    except:
+        cleanup(options, logger, tempdir)
+        raise
+    cleanup(options, logger, tempdir)
+
+def cleanup(options, logger, tempdir):
+    if options.debug:
+        logger.debug("not deleting temporary working directory: " + tempdir)
+    else:
+        logger.info("deleting temporary files")
+        shutil.rmtree(tempdir)
+    if options.debug or options.keep_ll_file:
+        logger.debug("not deleting ksl_submit.ll")
+    else:
         try:
-            os.remove(file)
+            os.remove('ksl_submit.ll')
         except:
             pass
             
-    logger.info("setting up job_out/job_err named pipes")
-    pipe_out = os.mkfifo("./job_out")
-    pipe_err = os.mkfifo("./job_err")
-
-    job_out_pipe = os.open('job_out', (os.O_RDONLY|os.O_NONBLOCK))
-    job_err_pipe = os.open('job_err', (os.O_RDONLY|os.O_NONBLOCK))
-    time.sleep(1) #loadleveler is a piece of shit
-
-    logger.info("setting up LoadLeveler submission script")
-    llfilename = setup_ll_file(options, args)
-    logger.info("submitting to LoadLeveler")
-    (llout, llerr) = call_command("llsubmit " + llfilename)
-    logger.info(llout)
-#    if len(llerr):
-        # silent ignore currently
-#        logger.error(llerr)
-    
-    longllqid = llout.split(' ')[1]
-    assert 'fen1-a.shaheen.kaust.edu.sa' in longllqid, "Unable to determine llq job id from output, %s" % llout
-    llqid = longllqid.replace("shaheen.kaust.edu.sa.","") + ".0"
-    #    logger.info("Watching job %s" % llqid)
-    logger.info("Watching for job_done file")
-    logger.info("following job_out/job_err named pipes")
-    job_poll = select.poll()
-    job_poll.register(job_out_pipe)
-    job_poll.register(job_err_pipe)
-
-    watch_pipes(job_poll, job_out_pipe, job_err_pipe, llqid)
-
-    logger.info("deleting old pipes")
-
-    if options.debug:
-        logger.debug("not deleting old pipes/job command file")
-    else:
-        logger.info("attempting to delete old pipes and submission script")
-        for file in "./job_out", "./job_err", "./job_done", llfilename:
-            try:
-                os.remove(file)
-            except:
-                pass
-
-
-def watch_pipes(job_poll, job_out_pipe, job_err_pipe, llqid):
+def watch_pipes(job_poll, job_out_pipe, job_err_pipe, job_done_name, llqid):
     logger = logging.getLogger('ksl_srun')
     while True:  # see return condition in hangup check        
         # handle any output
         handle_output(job_poll, job_out_pipe, job_err_pipe)
 
         # now check for hangup
-        if check_hangup(llqid):
+        if check_hangup(job_done_name):
             logger.info("Received a Hang-Up")
-            # handle any output before returning, but give file system a chance to clear named pipes
+            # handle any output before returning, but give file system
+            # a chance to clear named pipes  
             time.sleep(5)
             handle_output(job_poll, job_out_pipe, job_err_pipe)
             return
 
 def handle_output(job_poll, job_out_pipe, job_err_pipe):
-    # timeout every 2s to check for hangup from llq
     time.sleep(1)
     active_pipes = job_poll.poll(1000)
     for fileid, mask in active_pipes:
@@ -130,43 +211,47 @@ def handle_output(job_poll, job_out_pipe, job_err_pipe):
 
         
 
-def setup_ll_file(options, args):
+def setup_ll_file(options, ll_dict, tempdir):
     s = string.Template('''#!/usr/bin/env bash
 #
-# @ job_name            = test_job
+# @ job_name            = ${job_name}
 # @ job_type            = bluegene
-# @ output              = job_out
-# @ error               = job_err
+# @ output              = ${job_out_name}
+# @ error               = ${job_err_name}
 # @ environment         = COPY_ALL;
-# @ wall_clock_limit    = 20:00,20:00
-# @ notification        = always
+# @ wall_clock_limit    = ${wall_time},${wall_time}
+# @ notification        = ${notification}
 # @ bg_size             = ${partition_size}
 # @ cluster_list        = bgp
-# @ class               = development
+# @ class               = ${ll_class}
 # @ bg_connection       = prefer_torus
-# @ account_no          = ${account_no}
+# @ account_no          = ${account}
 
 # @ queue
 
-/bgsys/drivers/ppcfloor/bin/mpirun -np ${np} ${command}
-touch job_done
+/bgsys/drivers/ppcfloor/bin/mpirun -np ${np} -mode ${mode} ${command}
+${done_command}
 ''')
     logger = logging.getLogger('ksl_srun')
-    llfilename = "ksl_submit.ll"
-    llfile = open(llfilename, 'w')
-    llfile_contents = s.substitute(partition_size = options.partition_size, account_no= options.account_no,
-                                   np=options.np, command=string.join(args))
-    llfile.write(llfile_contents)
-    logger.debug(llfile_contents)
+    logger.debug(ll_dict)
+    if options.keep_ll_file or options.debug:
+        ll_filename = "./ksl_submit.ll"
+    else:
+        ll_filename = os.path.join(tempdir, "ksl_submit.ll")
+    ll_file = open(ll_filename, 'w')
+    ll_file_contents = s.substitute(ll_dict)
+
+    ll_file.write(ll_file_contents)
+    logger.debug(ll_file_contents)
     logger.debug("written to ksl_submit.ll")
-    llfile.close()
+    ll_file.close()
 
-    return llfilename
+    return ll_filename
 
-def check_hangup(llqid):
+def check_hangup(job_done_name):
     logger = logging.getLogger('ksl_srun')
-    logger.debug("checking for hangup...")
-    return os.path.exists('./job_done')
+    logger.debug("checking for hangup file " + job_done_name)
+    return os.path.exists(job_done_name)
 
 def call_command(command):
     process = subprocess.Popen(command.split(' '),
@@ -178,5 +263,12 @@ if __name__ == "__main__":
     try:
         main()
     except:
-        print """There was some sort of error running the script
-Please report to Aron Ahmadia <aron.ahmadia@kaust.edu.sa>"""
+        print """
+================================================================================
+||           *There was some sort of error running the script*                ||
+||       Please report to Aron Ahmadia <aron.ahmadia@kaust.edu.sa>            ||
+================================================================================
+
+Error stack follows
+"""
+        raise 
