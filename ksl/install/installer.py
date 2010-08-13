@@ -89,12 +89,19 @@ class installer:
         self.module('unload genie')
 
         for module in self.required_modules:
-            self.log.info("unloading module: %s" % module)
-            self.module("unload %s" % module)
-        
+            try:
+                self.log.info("unloading module: %s" % module)
+                self.module("unload %s" % module)
+            except:
+                self.log.info("ignoring error unloading module: %s" % module)
+                pass
         for module in self.compile_modules:
-            self.log.info("unloading module: %s" % module)
-            self.module("unload %s" % module)
+            try:
+                self.log.info("unloading module: %s" % module)
+                self.module("unload %s" % module)
+            except:
+                self.log.info("ignoring error unloading module: %s" % module)
+                pass
 
     def load_modules(self):
         # always load genie when using modules to get common environment variables
