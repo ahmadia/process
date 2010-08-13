@@ -240,9 +240,15 @@ def parse_install_file(options, args):
 if __name__ == "__main__":
     try:
         main()
-    except:
-        print \
-"""There was some sort of error running the script
-Please report to Aron Ahmadia <aron.ahmadia@kaust.edu.sa>"""
+    except SystemExit, e:
         raise
+    except:
+        print """
+================================================================================
+||           *There was some sort of error running the script*                ||
+||       Please report to Aron Ahmadia <aron.ahmadia@kaust.edu.sa>            ||
+================================================================================
 
+Error stack follows
+"""
+        raise 

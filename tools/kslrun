@@ -262,6 +262,8 @@ def call_command(command):
 if __name__ == "__main__":
     try:
         main()
+    except SystemExit, e:
+        raise
     except:
         print """
 ================================================================================
