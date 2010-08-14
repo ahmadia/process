@@ -64,7 +64,7 @@ def main():
     c.add_option('mode')
 
     # check /opt/share/ksl/system/config/kslrun.py, ~/.kslrun.py, and ./.kslrun.py
-    sysfile = '/opt/share/ksl/config/kslrun.py'
+    sysfile = '/opt/share/ksl/system/config/kslrun.py'
     if os.path.isfile(sysfile):
         c.add_file(sysfile)
     homefile = os.path.expanduser('~/.kslrun.py')
