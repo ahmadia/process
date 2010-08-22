@@ -163,9 +163,9 @@ class installer:
         self.log.info("unpacking overlay from file %s into %s" % (archive, self.working_dir))
         
         if 'tar' in archive:
-            self.unpack(archive, tarfile.open, build_dir)
+            self.unpack(archive, tarfile.open, self.working_dir)
         elif 'zip' in archive:
-            self.unpack(archive, zipfile.open, build_dir)
+            self.unpack(archive, zipfile.open, self.working_dir)
         else:
             raise Exception('unrecognized overlay archive format: %s' % archive)
 
