@@ -16,16 +16,42 @@ class installer:
         self.log = logging.getLogger('ksl.installer.package')
         self.modulesLoaded = False
 
-    def install(self):
+    def install(self, options):
         self.log.info('beginning installation')
+
+        self.add_system_install_steps()
+        
         num_steps = len(self.install_steps)
+        not_going = True
+        
         for step_no, step in zip(range(1,num_steps+1),self.install_steps):
             self.log.info('on step %d, %s' % (step_no, step))
-            if callable(step):
-                step(self)
+
+            if options.interactive and not_going:
+                print "(s)kip, (d)o, (g)o, or (c)ancel?"
+                cmd = getch()
+                if cmd == 'c':
+                    raise Exception('cancelled by user')
+                if cmd == 's':
+                    continue
+                if cmd == 'g':
+                    not_going = False
+                try:
+                    if callable(step):
+                        step(self)
+                    else:
+                        step_fun = step[0]
+                        step_fun(self,*step[1:])
+                except Exception, err:
+                    self.log.error('error on step %d, %s' % (step_no, step))
+                    if options.errors_fatal:
+                        raise
             else:
-                step_fun = step[0]
-                step_fun(self,*step[1:])
+                if callable(step):
+                    step(self)
+                else:
+                    step_fun = step[0]
+                    step_fun(self,*step[1:])
 
         if self.modulesLoaded:
             self.unload_modules()
@@ -82,6 +108,15 @@ class installer:
         handle = open(self.module_file,'w')
         handle.write(module_data)
         handle.close()
+
+    def add_system_install_steps(self):
+        self.install_steps = list(self.install_steps)
+        if self.install_steps[0] is not load_modules:
+            self.install_steps.insert(0, load_modules)
+        if self.install_steps[1] is not unpack_source:
+            self.install_steps.insert(1, unpack_source)
+        if self.install_steps[2] is not self.rebase:
+            self.install_steps.insert(2, rebase)
         
     def unload_modules(self):
         self.log.info("clearing modules")
@@ -104,18 +139,36 @@ class installer:
 
         self.modulesLoaded = True
     
-    def unpack_source(self):
+    def unpack_source(self, extract=True):
         archive_name = self.source
         build_dir = self.build_dir
         archive = self.find_file(archive_name, self.source_paths)
-        self.log.info("unpacking source file %s into %s" % (archive, build_dir))
+
+        if extract:
+            self.log.info("unpacking source file %s into %s" % (archive, build_dir))
+        else:
+            self.log.info("acquiring working directory information from source file %s" % archive)
+        
+        if 'tar' in archive:
+            self.working_dir = self.unpack(archive, tarfile.open, build_dir, extract)
+        elif 'zip' in archive:
+            self.working_dir = self.unpack(archive, zipfile.open, build_dir, extract)
+        else:
+            raise Exception('unrecognized install source archive format: %s' % archive)
+        self.log.info("working directory set to %s" % self.working_dir)
+
+    def unpack_overlay(self, archive_name):
+        build_dir = self.build_dir
+        archive = self.find_file(archive_name, self.overlay_paths)
+        self.log.info("unpacking overlay from file %s into %s" % (archive, self.working_dir))
         
         if 'tar' in archive:
             self.unpack(archive, tarfile.open, build_dir)
         elif 'zip' in archive:
             self.unpack(archive, zipfile.open, build_dir)
         else:
-            raise Exception('unrecognized install source archive format: %s' % archive)
+            raise Exception('unrecognized overlay archive format: %s' % archive)
+
 
     def install_source(self):
         self.unpack_source()
@@ -190,6 +243,14 @@ class installer:
             log.error(err_msg)
             raise Exception(err_msg)
 
+    def rebase(self):
+        try:
+            chdir(self.working_dir)
+        except Exception, err:
+            self.unpack_source(extract=False)
+            chdir(self.working_dir)
+        self.log.info('changed directory to %s', self.working_dir)
+
     def module(self, module_args):
         p = subprocess.Popen('%s python %s' % (self.module_cmd,module_args),
                              shell=True, stdout=subprocess.PIPE ,stderr=subprocess.STDOUT)
@@ -216,7 +277,7 @@ class installer:
         self.log.error(err_msg)
         raise Exception(err_msg)
 
-    def unpack(self, archive, unpacker, build_dir):
+    def unpack(self, archive, unpacker, build_dir, extract=True):
         try:
             u = unpacker(archive)
             members = u.getmembers()
@@ -234,15 +295,14 @@ class installer:
                 subdir = tail
             else:
                 subdir = tar_subpath.name
-            
-            for member in members:
-                u.extract(member,build_dir)
+
+            if extract:
+                for member in members:
+                    u.extract(member,build_dir)
+                    
             u.close()
-
-            working_dir = join(abspath(build_dir),subdir)
-            chdir(working_dir)
-            self.log.info('changed directory to %s', working_dir)
-
+            return join(abspath(build_dir),subdir)
+        
         except Exception, err:
             self.log.error('error during unpack: %s', err)
             raise
@@ -251,6 +311,7 @@ class installer:
 # DSL-ify this class
 load_modules = installer.load_modules
 unpack_source = installer.unpack_source
+unpack_overlay = installer.unpack_overlay
 configure = installer.configure
 apply_patch = installer.apply_patch
 make = installer.make
@@ -258,4 +319,17 @@ make_install = installer.make_install
 install_source = installer.install_source
 shell_command = installer.shell_command
 templated_shell_command = installer.templated_shell_command
+rebase = installer.rebase
 python = installer.python
+
+def getch():
+    import sys, tty, termios
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
+

@@ -9,6 +9,7 @@ import logging.handlers
 from optparse import OptionParser
 import string
 from ksl.install.installer import installer
+from ksl.install.installer import getch
 
 def main():
     (options, args) = get_options()
@@ -27,7 +28,7 @@ def main():
             setup_target_dir(variant, options)
             if options.do_install:
                 clobber_dir(variant, variant.target_dir, options)
-                variant.install()
+                variant.install(options)
             if options.do_module:
                 setup_module_dir(variant, options)
                 variant.install_module()
@@ -61,6 +62,11 @@ def get_options():
                       default="/opt/share/ksl/system/sources",
                       help="source paths to search " +\
                       "(default: /opt/share/ksl/system/sources)")
+    parser.add_option("-o", "--overlay_paths",
+                      action="store", dest="overlay_paths",
+                      default="/opt/share/ksl/system/overlays",
+                      help="overlay paths to search " +\
+                      "(default: /opt/share/ksl/system/overlays)")
     parser.add_option("-p", "--patch_paths",
                       action="store", dest="patch_paths",
                       default="/opt/share/ksl/tools/process/patches",
@@ -83,7 +89,10 @@ def get_options():
                       action="store_false", dest="errors_fatal",
                       default=True,
                       help="Do not abort if any variant builds fail")
-
+    parser.add_option("-z", "--interactive",
+                      action="store_true", dest="interactive",
+                      default=False,
+                      help="Ask which steps to apply")
     parser.add_option("-t", "--module_template",
                       action="store", dest="module_template",
                       default="/opt/share/ksl/tools/process/templates/module.ksl",
@@ -142,13 +151,14 @@ def setup_module_dir(variant, options):
         version_file = join(variant_modules_dir,'.version')
         if os.path.exists(version_file):
             if not options.force:
-                confirmation = raw_input(
-                    "Can I clobber module default version file %s? [y/n]: " % version_file)
-                log.info("deleting version file %s" % version_file)
-                os.remove(version_file)
-                if confirmation is not 'y':
+                print("Can I clobber module default version file %s? [y/n]: " % version_file)
+                confirmation = getch()
+                if confirmation != 'y':
                     raise Exception(
                         "unwilling to clobber version file %s" % version_file)
+            log.info("deleting version file %s" % version_file)
+            os.remove(version_file)
+
         log.info("setting default module version for %s on %s to %s " %
                  (variant.name, variant.target_arch, variant.version))
         file_handle = open(version_file, 'w')
@@ -164,9 +174,9 @@ def clobber_dir(variant, clobber_dir, options):
         
     if os.path.exists(clobber_dir):
         if not options.force:
-            confirmation = raw_input(
-                "Can I clobber directory %s? [y/n]: " % clobber_dir)
-            if confirmation is not 'y':
+            print("Can I clobber directory %s? [y/n]: " % clobber_dir)
+            confirmation = getch()
+            if confirmation != 'y':
                 raise Exception(
                     "unwilling to clobber directory %s" % clobber_dir)
         log.info("clobbering directory %s" %  clobber_dir)
@@ -231,10 +241,11 @@ def parse_install_file(options, args):
         variant.root = options.root
         variant.source_paths = options.source_paths
         variant.patch_paths = options.patch_paths
+        variant.overlay_paths = options.overlay_paths
         variant.build_dir = options.build_dir
         variant.module_cmd = options.module_cmd
         variant.module_template = options.module_template
-
+        
     return variants
 
 if __name__ == "__main__":
