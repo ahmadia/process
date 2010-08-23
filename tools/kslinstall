@@ -242,7 +242,8 @@ def parse_install_file(options, args):
         variant.source_paths = options.source_paths
         variant.patch_paths = options.patch_paths
         variant.overlay_paths = options.overlay_paths
-        variant.build_dir = options.build_dir
+        variant_build_path = variant.name+'-'+variant.version+variant.tag
+        variant.build_dir = join(options.build_dir,variant_build_path)
         variant.module_cmd = options.module_cmd
         variant.module_template = options.module_template
         

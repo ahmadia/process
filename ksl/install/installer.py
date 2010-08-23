@@ -53,6 +53,7 @@ class installer:
                     step_fun = step[0]
                     step_fun(self,*step[1:])
 
+        self.unbase()
         if self.modulesLoaded:
             self.unload_modules()
 
@@ -87,10 +88,13 @@ class installer:
         lib_strip = lambda l: splitext(l)[0].replace('lib','-l')
         if not self.libs:
             self.mod_libs     = ""
-            self.mod_ldflags  = ""
         else:
             self.mod_libs     = "".join(" %s" % (lib_strip(l)) for l in self.libs)
+        if not self.libdirs:
+            self.mod_ldflags  = ""
+        else:
             self.mod_ldflags  = "-L"+" -L".join(add_root(p) for p in self.libdirs)
+            
             
         self.modules_pretty   = " ".join(m for m in self.required_modules)
         if not self.required_modules:
@@ -169,6 +173,15 @@ class installer:
         else:
             raise Exception('unrecognized overlay archive format: %s' % archive)
 
+    def install_files(self, source, dest_subpath=''):
+        target_dir = self.target_dir
+        dest_path = os.path.join(target_dir, dest_subpath)
+        self.shell_command('install -D %s %s' % (source, dest_path))
+
+    def install_dir(self, dest_subpath):
+        target_dir = self.target_dir
+        dest_path = os.path.join(target_dir, dest_subpath)
+        self.shell_command('install -d %s' % dest_path)
 
     def install_source(self):
         self.unpack_source()
@@ -244,12 +257,17 @@ class installer:
             raise Exception(err_msg)
 
     def rebase(self):
+        self.base_dir = os.getcwd()
         try:
             chdir(self.working_dir)
         except Exception, err:
             self.unpack_source(extract=False)
             chdir(self.working_dir)
         self.log.info('changed directory to %s', self.working_dir)
+
+    def unbase(self):
+        chdir(self.base_dir)
+        self.log.info('changed directory to %s', self.base_dir)
 
     def module(self, module_args):
         p = subprocess.Popen('%s python %s' % (self.module_cmd,module_args),
@@ -307,7 +325,6 @@ class installer:
             self.log.error('error during unpack: %s', err)
             raise
 
-
 # DSL-ify this class
 load_modules = installer.load_modules
 unpack_source = installer.unpack_source
@@ -316,6 +333,8 @@ configure = installer.configure
 apply_patch = installer.apply_patch
 make = installer.make
 make_install = installer.make_install
+install_files = installer.install_files
+install_dir = installer.install_dir
 install_source = installer.install_source
 shell_command = installer.shell_command
 templated_shell_command = installer.templated_shell_command

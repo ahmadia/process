@@ -1,0 +1,69 @@
+# -*- python -*-
+# Hdf5 installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+
+base = installer()
+variants = []
+
+base.name='cblas'
+base.version='pdc'
+base.release='1'
+base.license="commercial, public domain software built on IBM's ESSL"
+base.vendor='PDC Center for High Performance Computing/IBM'
+base.url='http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build'
+base.summary=                       """Basic Linear Algebra Subprograms
+based on PDC-KTH patches to BlueGene/P"""
+base.packager='aron'
+base.source='cblas.tar.gz'
+base.category='math'
+base.description=\
+"""
+Basic Linear Algebra Subprograms (BLAS) is a de facto application
+programming interface standard for publishing libraries to perform
+basic linear algebra operations such as vector and matrix
+multiplication. They were first published in 1979, and are used to
+build larger packages such as LAPACK. Heavily used in high-performance
+computing, a highly optimized implementations of the CBLAS interface is
+available on Shaheen through IBM's ESSL implementation with patches
+contributed by the PDC at KTH.
+"""
+
+base.paths    = []
+base.binaries = []
+base.includes=['./include']
+base.libdirs=['./lib']
+base.required_modules = []
+base.compile_modules=['ibm']
+base.libs=['libcblas.a']
+base.notes=""
+
+s0 = unpack_overlay,'BlueGene-CBLAS-buildpack.tar.gz'
+s1 = (shell_command,'patch -p0 < cblas-testing-bgp.patch', 'patch')
+s2 = unpack_overlay,'cblas-pdc-makefile-overlay.tar.gz'
+s3 = (templated_shell_command,
+      Template('export KSL_INSTALL_DIR=$target_dir && make alllib'))
+s4 = (templated_shell_command,
+      Template('export KSL_INSTALL_DIR=$target_dir && export KSL_SHARED_FLAG=-qpic && make alllib'))
+s5 = (install_dir,'include')
+s6 = (install_files,'src/cblas_f77.h src/cblas.h','include')
+
+standard_install = (s0,s1,s2,s3,s5,s6)
+shared_install = (s0,s1,s2,s4,s5,s6)
+
+base.install_steps = standard_install
+base.tag = ''
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.target_arch = 'ppc450d'
+variants.append(ppc450d)
+
+ppc450d_pic = copy(ppc450d)
+ppc450d_pic.install_steps = shared_install
+ppc450d_pic.tag = '-pic'
+variants.append(ppc450d_pic)
+
+
+
+
