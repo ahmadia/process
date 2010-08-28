@@ -15,7 +15,7 @@ base.url='http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK
 base.summary=                       """Basic Linear Algebra Subprograms
 based on PDC-KTH patches to BlueGene/P"""
 base.packager='aron'
-base.source='cblas.tar.gz'
+base.source=''
 base.category='math'
 base.description=\
 """
@@ -31,13 +31,13 @@ through IBM's ESSL implementation
 base.paths    = []
 base.binaries = []
 base.includes=[]
-base.libdirs=[]
+base.libdirs=['/bgsys/ibm_essl/sles10/prod/opt/ibmmath/lib/','/opt/ibmcmp/xlf/bg/11.1/lib','/opt/ibmcmp/xlsmp/bg/1.7/lib']
 base.required_modules = []
 base.compile_modules=[]
-base.libs=['libesslsmpbg.a']
+base.libs=['libesslsmpbg.a','libxlsmp', 'libxlf90_r','libxlfmath']
 base.notes=""
 
-standard_install = ()
+standard_install = (load_modules, unpack_source, rebase)
 
 base.install_steps = standard_install
 base.tag = ''

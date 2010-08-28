@@ -63,6 +63,9 @@ class installer:
         template = Template(template_data.read())
         template_data.close()
 
+        if self.virtual_install:
+            self.target_dir='/'
+            
         add_root = lambda p: normpath(join(self.target_dir,p))
 
         self.UNAME            = self.name.upper()
@@ -115,6 +118,7 @@ class installer:
 
     def add_system_install_steps(self):
         self.install_steps = list(self.install_steps)
+        
         if self.install_steps[0] is not load_modules:
             self.install_steps.insert(0, load_modules)
         if self.install_steps[1] is not unpack_source:
@@ -144,6 +148,11 @@ class installer:
         self.modulesLoaded = True
     
     def unpack_source(self, extract=True):
+        if not self.source:
+            self.virtual_install = True
+            return
+
+        self.virtual_install = False
         archive_name = self.source
         build_dir = self.build_dir
         archive = self.find_file(archive_name, self.source_paths)
@@ -194,7 +203,7 @@ class installer:
     
     def apply_patch(self, patch_name):
         patch = self.find_file(patch_name, self.patch_paths)
-        self.shell_command('patch --verbose -p1 -i %s' % (patch), 'patch')
+        self.shell_command('patch --verbose --forward -p1 -i %s' % (patch), 'patch')
     
     def make(self, args=''):
         if self.target_arch == 'ppc450d' or self.target_arch == 'x86_64':
@@ -257,6 +266,8 @@ class installer:
             raise Exception(err_msg)
 
     def rebase(self):
+        if self.virtual_install:
+            return
         self.base_dir = os.getcwd()
         try:
             chdir(self.working_dir)
@@ -266,6 +277,8 @@ class installer:
         self.log.info('changed directory to %s', self.working_dir)
 
     def unbase(self):
+        if self.virtual_install:
+            return
         chdir(self.base_dir)
         self.log.info('changed directory to %s', self.base_dir)
 

@@ -26,6 +26,7 @@ def main():
 
             variant_logs = setup_package_logs(variant)
             setup_target_dir(variant, options)
+            variant.virtual_install = False # assume real install by default
             if options.do_install:
                 clobber_dir(variant, variant.target_dir, options)
                 variant.install(options)
