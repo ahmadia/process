@@ -47,8 +47,7 @@ if [is-loaded genie] {
 	setenv CC /opt/ibmcmp/vacpp/bg/9.0/bin/xlc_r
 	setenv CXX /opt/ibmcmp/vacpp/bg/9.0/bin/xlc_r
 	setenv FC /opt/ibmcmp/xlf/bg/11.1/bin/xlf90_r
-    }
-    if [is-loaded gnu] {
+    } else {
 	setenv CC /usr/bin/gcc
 	setenv CXX /usr/bin/g++
 	setenv FC /usr/bin/gfortran
@@ -59,8 +58,7 @@ if [is-loaded ibm] {
     setenv KSL_CC_PPC64 /opt/ibmcmp/vacpp/bg/9.0/bin/xlc_r
     setenv KSL_CXX_PPC64 /opt/ibmcmp/vacpp/bg/9.0/bin/xlc_r
     setenv KSL_FC_PPC64 /opt/ibmcmp/xlf/bg/11.1/bin/xlf90_r
-}
-if [is-loaded gnu] {
+} else {
     setenv KSL_CC_PPC64 /usr/bin/gcc
     setenv KSL_CXX_PPC64 /usr/bin/g++
     setenv KSL_FC_PPC64 /usr/bin/gfortran
