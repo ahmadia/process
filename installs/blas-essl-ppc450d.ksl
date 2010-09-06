@@ -1,5 +1,5 @@
 # -*- python -*-
-# Hdf5 installation file, KSL supercomputing team
+#blas-essl-ppc450d installation file, KSL supercomputing team
 from ksl.install.installer import *
 from copy import copy
 
@@ -31,10 +31,10 @@ through IBM's ESSL implementation
 base.paths    = []
 base.binaries = []
 base.includes=[]
-base.libdirs=['/bgsys/ibm_essl/sles10/prod/opt/ibmmath/lib/','/opt/ibmcmp/xlf/bg/11.1/lib','/opt/ibmcmp/xlsmp/bg/1.7/lib']
-base.required_modules = []
+base.libdirs=['/bgsys/ibm_essl/sles10/prod/opt/ibmmath/lib/']
+base.required_modules = ['xlf_libs']
 base.compile_modules=[]
-base.libs=['libesslsmpbg.a','libxlsmp', 'libxlf90_r','libxlfmath']
+base.libs=['libesslsmpbg.a']
 base.notes=""
 
 standard_install = (load_modules, unpack_source, rebase)

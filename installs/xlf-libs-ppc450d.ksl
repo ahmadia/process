@@ -1,0 +1,48 @@
+# -*- python -*-
+#xlf-libs-ppc450d installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+
+base = installer()
+variants = []
+
+base.name='xlf_libs'
+base.version='11.1'
+base.release='1'
+base.license="commercial"
+base.vendor="IBM"
+base.url="http://publib.boulder.ibm.com/infocenter/compbgpl/v9v111/index.jsp"
+base.summary=                       """IBM XL Fortran Advanced Edition
+Libraries for BlueGene/P""" 
+base.packager='aron'
+base.source=''
+base.category='math'
+base.description=\
+"""
+This module supports mixed-language programs by providing the XL
+Fortran base libraries and linker paths.  
+"""
+
+base.paths    = []
+base.binaries = []
+base.includes=[]
+base.libdirs=['/opt/ibmcmp/xlsmp/bg/1.7/lib','/opt/ibmcmp/xlmass/bg/4.4/bglib','/opt/ibmcmp/xlf/bg/11.1/bglib',]
+base.required_modules = []
+base.compile_modules=[]
+base.libs=['libxlf90_r','libxlopt','libxlsmp','libxl','libxlfmath']
+base.notes=""
+
+standard_install = (load_modules, unpack_source, rebase)
+
+base.install_steps = standard_install
+base.tag = ''
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.target_arch = 'ppc450d'
+variants.append(ppc450d)
+
+
+
+
+

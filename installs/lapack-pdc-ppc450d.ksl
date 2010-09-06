@@ -1,0 +1,69 @@
+# -*- python -*-
+# Hdf5 installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+
+base = installer()
+variants = []
+
+base.name='lapack'
+base.version='pdc'
+base.release='1'
+base.license="commercial, public domain software built on IBM's ESSL"
+base.vendor='PDC Center for High Performance Computing/IBM'
+base.url='http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build'
+base.summary=                       """Linear Algebra Package based on
+PDC-KTH patches to BlueGene/P""" 
+base.packager='aron'
+base.source='lapack-3.1.1-ksl.tar.gz'
+base.category='math'
+base.description=\
+"""LAPACK (Linear Algebra PACKage) is a software library for numerical
+linear algebra. It provides routines for solving systems of linear
+equations and linear least squares, eigenvalue problems, and singular
+value decomposition. It also includes routines to implement the
+associated matrix factorizations such as LU, QR, Cholesky and Schur
+decomposition. LAPACK was originally written in FORTRAN 77 and is now
+written in Fortran 90. The routines handle both real and complex
+matrices in both single and double precision.
+
+Heavily used in high-performance computing, a highly optimized
+implementations of the LAPACK interface is available on Shaheen
+through IBM's ESSL implementation with patches contributed by the PDC
+at KTH. 
+""" 
+
+base.paths    = []
+base.binaries = []
+base.includes=[]
+base.libdirs=['./lib']
+
+base.libs=['liblapack.a']
+base.compile_modules=['ibm']
+base.required_modules=['cblas']
+base.notes=""
+
+
+s0     = make,'lib'
+s0_pic = (templated_shell_command,
+          Template('export KSL_SHARED_FLAG=-qpic && make lib'))  
+s1     = (install_dir,'lib')
+s2     = (install_files,'liblapack.a tmglib.a','lib')
+
+standard_install = (s0,s1,s2)
+pic_install = (s0_pic,s1,s2)
+
+base.install_steps = standard_install
+base.build_host = 'ppc64'
+base.target_arch = 'ppc450d'
+
+base.tag = ''
+
+ppc450d = copy(base)
+variants.append(ppc450d)
+
+ppc450d_pic = copy(ppc450d)
+ppc450d_pic.install_steps = pic_install
+ppc450d_pic.tag = '-pic'
+variants.append(ppc450d_pic)
+

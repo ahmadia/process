@@ -1,0 +1,422 @@
+diff -Naur petsc4py/src/include/context.h petsc4py.bgp/src/include/context.h
+--- petsc4py/src/include/context.h	2010-09-06 14:00:12.728983937 +0300
++++ petsc4py.bgp/src/include/context.h	2010-09-05 12:21:26.148062351 +0300
+@@ -7,9 +7,9 @@
+   PetscFunctionBegin;
+   pyobj = (PyObject*) ptr;
+   if (pyobj && Py_IsInitialized()) {
+-    PyGILState_STATE _save = PyGILState_Ensure();
++    //PygilState_STATE _save = //PygilState_Ensure();
+     Py_DecRef(pyobj);
+-    PyGILState_Release(_save);
++    //PygilState_Release(_save);
+   }
+   PetscFunctionReturn(0);
+ }
+diff -Naur petsc4py/src/petsc4py.PETSc.c petsc4py.bgp/src/petsc4py.PETSc.c
+--- petsc4py/src/petsc4py.PETSc.c	2010-09-06 14:00:11.438982241 +0300
++++ petsc4py.bgp/src/petsc4py.PETSc.c	2010-09-05 12:24:30.368183389 +0300
+@@ -9487,7 +9487,7 @@
+   int __pyx_t_5;
+   PyObject *__pyx_t_6 = NULL;
+   PyObject *__pyx_t_7 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("Fwk_ImportConfigure");
+   __pyx_v_source = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_code = Py_None; __Pyx_INCREF(Py_None);
+@@ -9968,7 +9968,7 @@
+   __Pyx_DECREF(__pyx_v_namespace);
+   __Pyx_XDECREF(__pyx_v_configure);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -9994,7 +9994,7 @@
+   int __pyx_t_2;
+   int __pyx_t_3;
+   PyObject *__pyx_t_4 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("Fwk_ComponentConfigure");
+ 
+   /* "/home/aron/sandbox/petsc4py-clean/src/PETSc/petscfwk.pxi":75
+@@ -10344,7 +10344,7 @@
+   __Pyx_XDECREF(__pyx_v_klass);
+   __Pyx_XDECREF(__pyx_v_result);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -10365,7 +10365,7 @@
+   PyObject *__pyx_t_2;
+   PyObject *__pyx_t_3;
+   PyObject *__pyx_t_4;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("Fwk_PrintError");
+ 
+   /* "/home/aron/sandbox/petsc4py-clean/src/PETSc/petscfwk.pxi":118
+@@ -10474,7 +10474,7 @@
+   __pyx_r = 0;
+   __pyx_L0:;
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -13357,7 +13357,7 @@
+   PyObject *__pyx_t_3 = NULL;
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("NullSpace_Function");
+   __pyx_v_function = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -13487,7 +13487,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -19764,7 +19764,7 @@
+   PyObject *__pyx_t_5 = NULL;
+   int __pyx_t_6;
+   KSPConvergedReason __pyx_t_7;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("KSP_Converged");
+   __pyx_v_converged = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -19950,7 +19950,7 @@
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_DECREF(__pyx_v_reason);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -20177,7 +20177,7 @@
+   PyObject *__pyx_t_6 = NULL;
+   PyObject *__pyx_t_7 = NULL;
+   PyObject *__pyx_t_8 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("KSP_Monitor");
+   __pyx_v_monitor = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -20351,7 +20351,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -20536,7 +20536,7 @@
+   PyObject *__pyx_t_3 = NULL;
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("SNES_Function");
+   __pyx_v_function = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -20682,7 +20682,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -20822,7 +20822,7 @@
+   PyObject *__pyx_t_3 = NULL;
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("SNES_Update");
+   __pyx_v_update = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -20941,7 +20941,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -21061,7 +21061,7 @@
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+   MatStructure __pyx_t_6;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("SNES_Jacobian");
+   __pyx_v_jacobian = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -21269,7 +21269,7 @@
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_DECREF(__pyx_v_retv);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -21416,7 +21416,7 @@
+   PyObject *__pyx_t_5 = NULL;
+   int __pyx_t_6;
+   SNESConvergedReason __pyx_t_7;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("SNES_Converged");
+   __pyx_v_converged = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -21661,7 +21661,7 @@
+   __Pyx_XDECREF(__pyx_v_fn);
+   __Pyx_DECREF(__pyx_v_reason);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -21890,7 +21890,7 @@
+   PyObject *__pyx_t_6 = NULL;
+   PyObject *__pyx_t_7 = NULL;
+   PyObject *__pyx_t_8 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("SNES_Monitor");
+   __pyx_v_monitor = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -22086,7 +22086,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -22491,7 +22491,7 @@
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+   MatStructure __pyx_t_6;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("TS_LHSMatrix");
+   __pyx_v_lhsmatrix = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -22660,7 +22660,7 @@
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_DECREF(__pyx_v_retv);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -22687,7 +22687,7 @@
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+   MatStructure __pyx_t_6;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("TS_RHSMatrix");
+   __pyx_v_rhsmatrix = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -22856,7 +22856,7 @@
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_DECREF(__pyx_v_retv);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -22971,7 +22971,7 @@
+   PyObject *__pyx_t_3 = NULL;
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("TS_RHSFunction");
+   __pyx_v_function = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -23122,7 +23122,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -23242,7 +23242,7 @@
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+   MatStructure __pyx_t_6;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("TS_RHSJacobian");
+   __pyx_v_jacobian = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -23455,7 +23455,7 @@
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_DECREF(__pyx_v_retv);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -23571,7 +23571,7 @@
+   PyObject *__pyx_t_3 = NULL;
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("TS_IFunction");
+   __pyx_v_function = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -23738,7 +23738,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -23868,7 +23868,7 @@
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+   MatStructure __pyx_t_6;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("TS_IJacobian");
+   __pyx_v_jacobian = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -24126,7 +24126,7 @@
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_DECREF(__pyx_v_retv);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -24354,7 +24354,7 @@
+   PyObject *__pyx_t_6 = NULL;
+   PyObject *__pyx_t_7 = NULL;
+   PyObject *__pyx_t_8 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("TS_Monitor");
+   __pyx_v_monitor = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -24544,7 +24544,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -24606,7 +24606,7 @@
+   PyObject *__pyx_t_3 = NULL;
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("TS_PreStep");
+   __pyx_v_prestep = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -24720,7 +24720,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -24922,7 +24922,7 @@
+   PyObject *__pyx_t_3 = NULL;
+   PyObject *__pyx_t_4 = NULL;
+   PyObject *__pyx_t_5 = NULL;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("TS_PostStep");
+   __pyx_v_poststep = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_args = Py_None; __Pyx_INCREF(Py_None);
+@@ -25036,7 +25036,7 @@
+   __Pyx_DECREF(__pyx_v_args);
+   __Pyx_DECREF(__pyx_v_kargs);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+@@ -110881,7 +110881,7 @@
+   PyObject *__pyx_t_2 = NULL;
+   PyObject *__pyx_t_3 = NULL;
+   int __pyx_t_4;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PyGILState_STATE _save = //PyGILState_Ensure();
+   __Pyx_RefNannySetupContext("traceback");
+   __pyx_v_fun = Py_None; __Pyx_INCREF(Py_None);
+   __pyx_v_fnm = Py_None; __Pyx_INCREF(Py_None);
+@@ -111191,7 +111191,7 @@
+   __Pyx_DECREF(__pyx_v_dnm);
+   __Pyx_DECREF(__pyx_v_m);
+   __Pyx_RefNannyFinishContext();
+-  PyGILState_Release(_save);
++  //PyGILState_Release(_save);
+   return __pyx_r;
+ }
+ 
+diff -Naur petsc4py/src/source/python_core.h petsc4py.bgp/src/source/python_core.h
+--- petsc4py/src/source/python_core.h	2010-09-06 14:00:11.708982596 +0300
++++ petsc4py.bgp/src/source/python_core.h	2010-09-05 12:21:10.458039941 +0300
+@@ -322,18 +322,18 @@
+                                                   PyObject **outself)
+ {
+   PetscErrorCode ierr;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PygilState_STATE _save = //PygilState_Ensure();
+   ierr = PetscCreatePythonObject(fullname, outself);
+-  PyGILState_Release(_save);
++  //PygilState_Release(_save);
+   return ierr;
+ }
+ #define PetscCreatePythonObject PetscCreatePythonObject_GIL
+ static PetscErrorCode PetscPythonGetFullName_GIL(PyObject *self, char *pyname[])
+ {
+   PetscErrorCode ierr;
+-  PyGILState_STATE _save = PyGILState_Ensure();
++  //PygilState_STATE _save = //PygilState_Ensure();
+   ierr = PetscPythonGetFullName(self, pyname);
+-  PyGILState_Release(_save);
++  //PygilState_Release(_save);
+   return ierr;
+ }
+ #define PetscPythonGetFullName PetscPythonGetFullName_GIL

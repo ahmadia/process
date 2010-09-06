@@ -32,7 +32,7 @@ base.libdirs=['./lib']
 # these libraries all appear to be independent
 base.libs=['libpetsc.a']
 base.compile_modules=[]
-base.required_modules=['hdf5','parmetis','blas','lapack','boost']
+base.required_modules=['hdf5','parmetis','cblas','lapack','boost']
 base.notes=\
 """
 Build Notes:
@@ -50,7 +50,7 @@ s1 = unpack_source
 p0 = apply_patch, 'petsc_shaheen_xlc.patch'
 s2 = (shell_command, 'export PETSC_DIR=`pwd` && export PETSC_ARCH=bgp-xlc-sieve')
 s3 = (templated_shell_command,
-      Template('mv bgp-xlc.py bgp-xlc-sieve.py && chmod +x bgp-xlc-sieve.py && PLIBS="$$LDFLAGS $$LIBS" && ./bgp-xlc-sieve.py --with-hdf5=1 --with-parmetis=1 --with-boost=1 --with-sieve=1 --prefix=$target_dir --with-clanguage=cxx --cflags=$$CFLAGS --CXXFLAGS=$$CXXFLAGS --FFLAGS=$$FFLAGS --FCFLAGS=$$FCFLAGS --LIBS="$$PLIBS" --CC=$$CC --CXX=$$CXX --FC=$$FC --with-blas-lib=$${KSL_BLAS_LD_LIBRARY_PATH}/libblas.a --with-lapack-lib=$${KSL_LAPACK_LD_LIBRARY_PATH}/liblapack.a --with-hdf5-dir=$${KSL_HDF5_DIR} --with-parmetis-dir=$${KSL_PARMETIS_DIR} --with-boost-dir=$${KSL_BOOST_DIR}/include --with-debugging=0'))
+      Template('mv bgp-xlc.py bgp-xlc-sieve.py && chmod +x bgp-xlc-sieve.py && PLIBS="$$LDFLAGS $$LIBS" && ./bgp-xlc-sieve.py --with-hdf5=1 --with-parmetis=1 --with-boost=1 --with-sieve=1 --prefix=$target_dir --with-clanguage=cxx --cflags=$$CFLAGS --CXXFLAGS=$$CXXFLAGS --FFLAGS=$$FFLAGS --FCFLAGS=$$FCFLAGS --LIBS="$$PLIBS" --CC=$$CC --CXX=$$CXX --FC=$$FC --with-blas-lib=$${KSL_CBLAS_LD_LIBRARY_PATH}/libblas.a --with-lapack-lib=$${KSL_LAPACK_LD_LIBRARY_PATH}/liblapack.a --with-hdf5-dir=$${KSL_HDF5_DIR} --with-parmetis-dir=$${KSL_PARMETIS_DIR} --with-boost-dir=$${KSL_BOOST_DIR}/include --with-debugging=0'))
 s4 = make
 s5 = make_install
 
