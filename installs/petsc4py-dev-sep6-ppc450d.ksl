@@ -1,0 +1,51 @@
+# -*- python -*-
+# BJam 1.40.0 installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+from string import Template
+
+base = installer()
+variants = []
+
+base.name='petsc4py'
+base.version='dev-aug29'
+base.release='1'
+base.license='BSD'
+base.vendor='Lisandro Dalcin'
+base.url='http://code.google.com/p/petsc4py/'
+base.summary='PETSc for Python!'
+base.packager='aron'
+base.source='petsc4py-sep6.tar.gz'
+base.category='scientific libraries'
+base.description=\
+"""PETSc is a suite of data structures and routines for the scalable (parallel) solution of scientific applications modeled by partial differential equations. It employs the MPI standard for all message-passing communication.
+
+petsc4py are Python bindings for PETSc, the Portable, Extensible Toolkit for Scientific Computation.
+"""
+
+base.paths    = []
+base.binaries = []
+base.includes=['./lib/python/petsc4py/include/']
+base.libdirs=['./lib/python/petsc4py/lib']
+base.libs=[]
+base.compile_modules=['python']
+base.required_modules=['numpy','petsc/dev-16784-bgp_gnu_shared']
+base.notes="""This build has been patched around the following bugs:
+* GIL lock (BGP Python is not threaded)
+"""
+base.tag = ''
+
+s1 = apply_patch,'petsc4py_dev_sep6_gil.patch'
+s2 = (templated_shell_command,
+      Template('python setup.py -v build --compiler=mpixlc install --home=$target_dir'))
+
+ppc450d_install = (s1, s2)
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.install_steps = ppc450d_install
+ppc450d.target_arch = 'ppc450d'
+ppc450d.mod_magic = ''
+variants.append(ppc450d)
+
+

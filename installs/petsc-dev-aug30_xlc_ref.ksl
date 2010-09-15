@@ -1,0 +1,66 @@
+# -*- python -*-
+# Petsc installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+from string import Template
+
+base = installer()
+variants = []
+
+base.name='petsc'
+base.version='dev-aug30'
+base.release='1'
+base.license='BSD-like'
+base.vendor='Argonne National Laboratories - MCS Division'
+base.url='http://www.mcs.anl.gov/petsc/petsc-as/'
+base.summary='Portable Extensible Toolkit for Scientific Computation'
+base.packager='aron'
+base.source='petsc-dev-16784.tar.gz'
+base.category='math'
+base.description=\
+"""PETSc, pronounced PET-see (the S is silent), is a suite of data
+structures and routines for the scalable (parallel) solution of
+scientific applications modeled by partial differential equations.  It
+employs the MPI standard for parallelism.    
+"""
+
+base.paths    = []
+base.binaries = []
+base.includes=['./include']
+base.libdirs=['./lib'] 
+
+# these libraries all appear to be independent
+base.libs=['libpetsc.a']
+base.compile_modules=[]
+base.required_modules=[]
+base.notes=\
+"""
+Build Notes:
+* Fortran disabled
+* reference BLAS/LAPACK
+"""
+
+o0 = unpack_overlay,'petsc_bgp_overlay.tar.gz'
+s1 = (shell_command, 'export PETSC_DIR=`pwd` && export PETSC_ARCH=bgp-xlc')
+s2 = (templated_shell_command,
+      Template('mv configure_shaheen.py bgp-xlc-ref.py && PLIBS="$$LDFLAGS $$LIBS" && ./bgp-xlc-ref.py --download-c-blas-lapack=yes --with-shared=0 --prefix=$target_dir --with-clanguage=c --cflags=$$CFLAGS --CXXFLAGS=$$CXXFLAGS LIBS="$$PLIBS" --CC=$$CC --CXX=$$CXX --with-fortran=0 --with-debugging=0 --with-fortran-kernels=0'))
+s3 = make
+s4 = make_install 
+
+xlc_install = (o0, s1, s2, s3, s4) 
+
+base.tag = '-bgp_xlc_ref'
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.compile_modules = ['ibm']
+ppc450d.target_arch = 'ppc450d'
+ppc450d.install_steps = xlc_install
+ppc450d.mod_magic = \
+'''
+setenv PETSC_DIR "$::env(KSL_PETSC_DIR)"
+setenv PETSC_ARCH bgp-xlc-ref
+'''
+variants.append(ppc450d)
+
+
