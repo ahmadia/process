@@ -1,0 +1,53 @@
+# -*- python -*-
+# GSL installation file, KSL supercomputing team
+from ksl.install.installer import *
+from copy import copy
+
+base = installer()
+variants = []
+
+base.name='gsl'
+base.version='1.14'
+base.release='1'
+base.license='GPL'
+base.vendor='Free Software Foundation'
+base.url='http://www.gnu.org/software/gsl/'
+base.summary='GNU Scientific Library'
+base.packager='aron'
+base.source='gsl-1.14.tar.gz'
+base.category='scientific'
+base.description=\
+"""The GNU Scientific Library (GSL) is a numerical library for C and
+C++ programmers. It is free software under the GNU General Public
+License.
+
+The library provides a wide range of mathematical routines such as
+random number generators, special functions and least-squares
+fitting. There are over 1000 functions in total with an extensive test
+suite."""
+
+base.paths    = []
+base.binaries = []
+base.includes=['./include']
+base.libdirs=['./lib']
+base.libs=['libgsl.a']
+base.compile_modules=[]
+base.required_modules=['blas', 'cblas']
+base.notes=""
+
+s0 = configure, '--disable-shared'
+s1 = make
+s2 = make_install
+
+standard_install = (s0, s1, s2)
+
+base.install_steps = standard_install
+base.tag = ''
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.compile_modules = ['ibm']
+ppc450d.target_arch = 'ppc450d'
+variants.append(ppc450d)
+
+
