@@ -243,7 +243,7 @@ def setup_ll_file(options, ll_dict, tempdir):
 
 # @ queue
 
-/bgsys/drivers/ppcfloor/bin/mpirun -exp_env LD_LIBRARY_PATH env BG_MAPPING=${bg_map} -np ${np} -mode ${mode} ${command}
+/bgsys/drivers/ppcfloor/bin/mpirun -exp_env LD_LIBRARY_PATH -env BG_MAPPING=${bg_map} -np ${np} -mode ${mode} ${command}
 ${done_command}
 ''')
     logger = logging.getLogger('ksl_srun')
