@@ -4,64 +4,78 @@ import os, re, sys, select, subprocess, logging, time, string, optparse
 import cfgparse, tempfile, shutil, inspect
 
 def main():
-    o = optparse.OptionParser()
+    o = optparse.OptionParser(usage="usage: %kslrun [options] exe_with_args\nSee /opt/share/ksl/system/config/kslrun.py for default arguments")
     c = cfgparse.ConfigParser(allow_py=True)
 
-    c.add_optparse_help_option(o)
+#    c.add_optparse_help_option(o)
 
 
     ### Run Options
-    o.add_option("-v", "--verbose", action="store_true", 
+    og = optparse.OptionGroup(o, "GENERAL")
+    og.add_option("-v", "--verbose", action="store_true", 
                  help="print informational status messages to stdout")
     c.add_option('verbose')
     
-    o.add_option("-d", "--debug", action="store_true",
+    og.add_option("-d", "--debug", action="store_true",
                  help="enable debug mode (developer use)")
     c.add_option('debug')
 
-    o.add_option("-r", "--no_std_redirect", action="store_true",
+    og.add_option("-r", "--no_std_redirect", action="store_true",
                  help="disable stdout/stderr redirection")
     c.add_option('no_std_redirect')
     
-    o.add_option("-k", "--keep_ll_file", action="store_true",
+    og.add_option("-k", "--keep_ll_file", action="store_true",
                  help="do not delete LoadLeveler file after run")
     c.add_option('keep_ll_file')
 
-    o.add_option('--no_notify', action="store_true",
+    og.add_option('--no_notify', action="store_true",
                  help="do not send a notification email when job completes")
 
-    ### LoadLeveler/MPI Options
-    o.add_option("--prefix", type='string',
+    o.add_option_group(og)
+
+    ### LoadLeveler Options
+    og = optparse.OptionGroup(o, "LOADLEVELER")
+    og.add_option("--prefix", type='string',
                  help='prefix for output files (only meaningful if no_std_redirect is enabled')
     c.add_option('prefix')
 
-    o.add_option("-p", "--partition_size", type='int', 
+    og.add_option("-p", "--partition_size", type='int', 
                  help="size of the BGP partition to request")
     c.add_option('partition_size')
     
-    o.add_option("-j", "--job_name", type='string',
+    og.add_option("-j", "--job_name", type='string',
                  help="job_name as passed to LoadLeveler")
     c.add_option('job_name')
 
-    o.add_option('-t', "--wall_time", type='string',
+    og.add_option('-t', "--wall_time", type='string',
                  help="job wall_time as passed to LoadLeveler")
     c.add_option('wall_time')
 
-    o.add_option('-c', "--ll_class", type='string',
+    og.add_option('-c', "--ll_class", type='string',
                  help="job class as passed to LoadLeveler")
     c.add_option('ll_class')
       
-    o.add_option("-a", "--account", type='string',
-                 help="account number to use (defaults to k01)")
+    og.add_option("-a", "--account", type='string',
+                 help="account number to charge")
     c.add_option('account')
 
-    o.add_option("-n", "--np", type='int',
+    o.add_option_group(og)
+
+    ### MPI Options
+    og = optparse.OptionGroup(o, "MPI")
+    og.add_option("-n", "--np", type='int',
                  help="number of MPI processes to request")
     c.add_option('np')
 
-    o.add_option("-m", "--mode", type='string',
-                 help="MPI mode to specify (i.e. VN, DUAL, SMP)")
+    og.add_option("-m", "--mode", type='string',
+                 help="MPI mode to use (e.g. VN, DUAL, SMP)")
     c.add_option('mode')
+
+    og.add_option("--map", type='string', dest='bg_map',
+                 help="mapping of logical MPI processes to physical nodes/cores (e.g. XYZT, TXYZ, ...)")
+    c.add_option('bg_map')
+
+    o.add_option_group(og)
 
     # check /opt/share/ksl/system/config/kslrun.py, ~/.kslrun.py, and ./.kslrun.py
     sysfile = '/opt/share/ksl/system/config/kslrun.py'
@@ -229,7 +243,7 @@ def setup_ll_file(options, ll_dict, tempdir):
 
 # @ queue
 
-/bgsys/drivers/ppcfloor/bin/mpirun -exp_env LD_LIBRARY_PATH -np ${np} -mode ${mode} ${command}
+/bgsys/drivers/ppcfloor/bin/mpirun -exp_env LD_LIBRARY_PATH env BG_MAPPING=${bg_map} -np ${np} -mode ${mode} ${command}
 ${done_command}
 ''')
     logger = logging.getLogger('ksl_srun')

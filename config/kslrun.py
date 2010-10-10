@@ -11,3 +11,4 @@ ll_class           = 'default'
 prefix             = './$(job_name)_$(jobid)'
 np                 = 1
 mode               = 'SMP'
+bg_map             = 'TXYZ'
