@@ -123,7 +123,7 @@ def main():
             
             job_out_pipe = os.open(job_out_name, (os.O_RDONLY|os.O_NONBLOCK))
             job_err_pipe = os.open(job_err_name, (os.O_RDONLY|os.O_NONBLOCK))
-            time.sleep(1) #loadleveler is a piece of shit
+            time.sleep(1) 
             job_done_name = os.path.join(tempdir, "job_done")
             done_command = 'touch ' + job_done_name
         else:
