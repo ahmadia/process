@@ -6,7 +6,7 @@ import cfgparse, tempfile, shutil, inspect
 bgp_template = string.Template('''#!/usr/bin/env bash
 #
 # @ job_name            = ${job_name}
-# @ job_type            = ${job_type}
+# @ job_type            = bgp
 # @ output              = ${job_out_name}
 # @ error               = ${job_err_name}
 # @ environment         = COPY_ALL;
@@ -26,7 +26,7 @@ ${done_command}
 x86_template = string.Template('''#!/usr/bin/env bash
 #
 # @ job_name            = ${job_name}
-# @ job_type            = ${job_type}
+# @ job_type            = parallel
 # @ output              = ${job_out_name}
 # @ error               = ${job_err_name}
 # @ environment         = COPY_ALL;
@@ -34,13 +34,12 @@ x86_template = string.Template('''#!/usr/bin/env bash
 # @ notification        = ${notification}
 # @ node                = ${partition_size}
 # @ tasks_per_node      = ${tasks_per_node}
-# @ cluster_list        = ${cluster_list}
 # @ class               = ${ll_class}
 # @ account_no          = ${account}
 
 # @ queue
 
-mpdboot –f $$LOADL_HOSTFILE
+mpidboot -f $${LOADL_HOSTFILE}
 mpirun -np ${np} ${command}
 mpdallexit
 
@@ -48,12 +47,12 @@ ${done_command}
 ''')
 
 
-
+ 
 def main():
     # mode depends on if we are running on neser or shaheen
     host_arch = os.uname()[4]
-    
-    o = optparse.OptionParser(usage="usage: %kslrun [options] exe_with_args\nSee /opt/share/ksl/system/config/kslrun.py for default arguments")
+    usage_str = "usage: kslrun [options] exe_with_args\nSee /opt/share/ksl/system/config/%s/kslrun.py for default arguments" % host_arch
+    o = optparse.OptionParser(usage=usage_str)
     c = cfgparse.ConfigParser(allow_py=True)
 
 #    c.add_optparse_help_option(o)
@@ -104,11 +103,9 @@ def main():
                  help="account number to charge")
     c.add_option('account')
 
-    ### BGP-specific
-    if host_arch == 'ppc64':
-        og.add_option("-p", "--partition_size", type='int', 
-                      help="size of the BGP partition to request")
-        c.add_option('partition_size')
+    og.add_option("-p", "--partition_size", type='int', 
+                  help="number of nodes to request")
+    c.add_option('partition_size')
 
     o.add_option_group(og)
 
@@ -197,16 +194,22 @@ def main():
         else:
             ll_dict['notification'] = 'always'
 
-        llfilename = setup_ll_file(options, ll_dict, tempdir)
+        llfilename = setup_ll_file(options, host_arch, ll_dict, tempdir)
         logger.info("submitting to LoadLeveler")
         (llout, llerr) = call_command("llsubmit " + llfilename)
         logger.info(llout)
-    #    if len(llerr):
-            # silent ignore currently
-    #        logger.error(llerr)
+        #    if len(llerr):
+        # silent ignore currently
+        #        logger.error(llerr)
 
         longllqid = llout.split(' ')[1]
-        assert 'fen1-a.shaheen.kaust.edu.sa' in longllqid, "Unable to determine llq job id from output, %s" % llout
+
+        if host_arch == 'ppc64':
+            fen = 'fen1-a'
+        else:
+            fen = 'cn96'
+        assert ('%s.shaheen.kaust.edu.sa' % fen) in longllqid, "Unable to determine llq job id from output, %s" % llout
+
         llqid = longllqid.replace("shaheen.kaust.edu.sa.","") + ".0"
 
         if not options.no_std_redirect:
@@ -285,6 +288,7 @@ def setup_ll_file(options, host_arch, ll_dict, tempdir):
         ll_filename = "./ksl_submit.ll"
     else:
         ll_filename = os.path.join(tempdir, "ksl_submit.ll")
+
     ll_file = open(ll_filename, 'w')
 
     if host_arch == 'ppc64':
@@ -292,11 +296,10 @@ def setup_ll_file(options, host_arch, ll_dict, tempdir):
     else:
         tpn = float(ll_dict['np']/ll_dict['partition_size'])
         assert tpn in range(1,9), 'Invalid # tasks per node, %d!' % tpn
-        ll_dict['tasks_per_node'] = tpn
+        ll_dict['tasks_per_node'] = int(tpn)
         ll_file_contents = x86_template.substitute(ll_dict)
 
-    ll_file.write(ll_file_contents)        ll_file_contents = bgp_template.substitute(ll_dict)
-
+    ll_file.write(ll_file_contents)        
     logger.debug(ll_file_contents)
     logger.debug("written to ksl_submit.ll")
     ll_file.close()
