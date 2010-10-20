@@ -105,7 +105,7 @@ def main():
     c.add_option('account')
 
     ### BGP-specific
-    if host_arch = 'ppc64':
+    if host_arch == 'ppc64':
         og.add_option("-p", "--partition_size", type='int', 
                       help="size of the BGP partition to request")
         c.add_option('partition_size')
@@ -119,7 +119,7 @@ def main():
     c.add_option('np')
 
     ### BGP-specific
-    if host_arch = 'ppc64':
+    if host_arch == 'ppc64':
         og.add_option("-m", "--mode", type='string',
                       help="MPI mode to use (e.g. VN, DUAL, SMP)")
         c.add_option('mode')
@@ -287,7 +287,7 @@ def setup_ll_file(options, host_arch, ll_dict, tempdir):
         ll_filename = os.path.join(tempdir, "ksl_submit.ll")
     ll_file = open(ll_filename, 'w')
 
-    if host_arch = 'ppc64':
+    if host_arch == 'ppc64':
         ll_file_contents = bgp_template.substitute(ll_dict)
     else:
         tpn = float(ll_dict['np']/ll_dict['partition_size'])
