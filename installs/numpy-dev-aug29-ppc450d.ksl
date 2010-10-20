@@ -21,8 +21,8 @@ base.description=\
 """NumPy is an extension to the Python programming language, adding support for large, multi-dimensional arrays and matrices, along with a large library of high-level mathematical functions to operate on these arrays. The ancestor of NumPy, Numeric, was originally created by Jim Hugunin. NumPy is open source and has many contributors.
 """
 
-base.paths    = []
-base.binaries = []
+base.paths    = ['./bin']
+base.binaries = ['f2py']
 base.includes=['./lib/python/numpy/core/include/']
 base.libdirs=['./lib']
 base.libs=[]
@@ -33,6 +33,7 @@ base.notes="""This build has been patched around the following bugs:
 * forced doubles to represent long doubles
 * added mpixlf90 support
 * worked around a bug in the libnpymath build script.
+* there are some additional changes in the build that have not been checked in that should not be fundamental.
 """
 base.tag = ''
 
@@ -48,7 +49,7 @@ ppc450d = copy(base)
 ppc450d.build_host = 'ppc64'
 ppc450d.install_steps = ppc450d_install
 ppc450d.target_arch = 'ppc450d'
-ppc450d.mod_magic = ''
+ppc450d.mod_magic = 'prepend-path PYTHONPATH $::env(KSL_NUMPY_DIR)/lib/python'
 variants.append(ppc450d)
 
 
