@@ -6,14 +6,14 @@ import cfgparse, tempfile, shutil, inspect
 bgp_template = string.Template('''#!/usr/bin/env bash
 #
 # @ job_name            = ${job_name}
-# @ job_type            = bgp
+# @ job_type            = bluegene
 # @ output              = ${job_out_name}
 # @ error               = ${job_err_name}
-# @ environment         = COPY_ALL;
+# @ environment         = COPY_ALL; 
 # @ wall_clock_limit    = ${wall_time},${wall_time}
 # @ notification        = ${notification}
 # @ bg_size             = ${partition_size}
-# @ cluster_list        = ${cluster_list}
+# @ cluster_list        = bgp
 # @ class               = ${ll_class}
 # @ account_no          = ${account}
 
@@ -29,7 +29,7 @@ x86_template = string.Template('''#!/usr/bin/env bash
 # @ job_type            = parallel
 # @ output              = ${job_out_name}
 # @ error               = ${job_err_name}
-# @ environment         = COPY_ALL;
+# @ environment         = COPY_ALL; 
 # @ wall_clock_limit    = ${wall_time},${wall_time}
 # @ notification        = ${notification}
 # @ node                = ${partition_size}
@@ -39,9 +39,8 @@ x86_template = string.Template('''#!/usr/bin/env bash
 
 # @ queue
 
-mpidboot -f $${LOADL_HOSTFILE}
-mpirun -np ${np} ${command}
-mpdallexit
+declare -x LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:/opt/share/chem_tools/openmpi-1.4.1/lib
+/opt/share/chem_tools/openmpi-1.4.1/bin/mpiexec -x LD_LIBRARY_PATH=$$LD_LIBRARY_PATH -np ${np} ${command}
 
 ${done_command}
 ''')
@@ -298,6 +297,7 @@ def setup_ll_file(options, host_arch, ll_dict, tempdir):
         assert tpn in range(1,9), 'Invalid # tasks per node, %d!' % tpn
         ll_dict['tasks_per_node'] = int(tpn)
         ll_file_contents = x86_template.substitute(ll_dict)
+        
 
     ll_file.write(ll_file_contents)        
     logger.debug(ll_file_contents)
