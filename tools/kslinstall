@@ -1,14 +1,7 @@
 #!/usr/bin/env python
 
-import os
-from os import makedirs
-from shutil import rmtree
-import subprocess
-import logging
-import logging.handlers
-from optparse import OptionParser
-import string
-import ksl.process
+import os, sys, shutil, subprocess, logging, string, optparse, cfgparse
+import ksl.process, logging.handlers
 from ksl.process.install.installer import installer
 from ksl.process.install.installer import getch
 
@@ -52,6 +45,10 @@ def get_options():
     c = cfgparse.ConfigParser(allow_py=True)
 
     og = optparse.OptionGroup(o, "GENERAL")
+    og.add_option("--version",
+                  action="store_true", default=False,
+                  help="print version string and exit")
+
     og.add_option("-v", "--verbose",
                   action="store_true", 
                   help="print informational messages to stdout")
@@ -91,17 +88,17 @@ def get_options():
     
     og = optparse.OptionGroup(o, "INPUT PATHS")
 
-    og.add_option("-s", "--source_paths",
+    og.add_option("--source_paths",
                       action="store", dest="source_paths",
                       help="source paths to search ")
     c.add_option('source_paths')
 
-    og.add_option("-o", "--overlay_paths",
+    og.add_option("--overlay_paths",
                       action="store", dest="overlay_paths",
                       help="overlay paths to search")
     c.add_option('overlay_paths')
     
-    og.add_option("-p", "--patch_paths",
+    og.add_option("--patch_paths",
                       action="store", dest="patch_paths",
                       help="patch paths to search")
     c.add_option('patch_paths')
@@ -120,12 +117,12 @@ def get_options():
                   help="working directory for builds")
     c.add_option('build_dir')
 
-    og.add_option("-r", "--root_install_dir",
+    og.add_option("--root_install_dir",
                   action="store", dest="root_install_dir",
                   help="root directory to install packages to")
     c.add_option('root_install_dir')
         
-    og.add_option("-m", "--root_module_dir",
+    og.add_option("--root_module_dir",
                   action="store", dest="root_module_dir",
                   help="root module directory to install modulefiles to")
     c.add_option('root_module_dir')
@@ -147,8 +144,10 @@ def get_options():
             c.add_file(os.environ['KSL_INSTALL_CONFIG'])
     
     (options, args) = c.parse(o)
-    
-    (options, args) = parser.parse_args()
+
+    if options.version:
+        print "kslinstall: ",ksl.process.__version__
+        sys.exit(0)
 
     if not args:
         raise Exception("It appears you forgot to specify an install file!")
@@ -222,10 +221,10 @@ def clobber_dir(variant, clobber_dir, options):
                 raise Exception(
                     "unwilling to clobber directory %s" % clobber_dir)
         log.info("clobbering directory %s" %  clobber_dir)
-        rmtree(clobber_dir)
+        shutil.rmtree(clobber_dir)
 
     log.info("creating empty directory %s" % clobber_dir)
-    makedirs(clobber_dir)
+    os.makedirs(clobber_dir)
 
 def setup_package_logs(variant):
     root = '/opt/share/ksl/system/logs/installs'
@@ -295,6 +294,13 @@ if __name__ == "__main__":
     try:
         main()
     except SystemExit, e:
+        raise
+    except KeyboardInterrupt, e:
+        print """
+================================================================================
+||                           *Interrupted by user*                            ||
+================================================================================
+"""
         raise
     except:
         print """

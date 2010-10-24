@@ -2,7 +2,7 @@
 
 import os, re, sys, select, subprocess, logging, time, string, optparse
 import cfgparse, tempfile, shutil, inspect
-import ksl
+import ksl.process
 
 bgp_template = string.Template('''#!/usr/bin/env bash
 #
@@ -51,7 +51,7 @@ ${done_command}
 def main():
     # mode depends on if we are running on neser or shaheen
     host_arch = os.uname()[4]
-    usage_str = "kslrun %s\nusage: kslrun [options] exe_with_args\nSee /opt/share/ksl/system/config/%s/kslrun.py for default arguments" % (ksl.process.__version__,host_arch)
+    usage_str = "usage: kslrun [options] exe_with_args\nSee /opt/share/ksl/system/config/%s/kslrun.py for default arguments\nkslrun %s" % (host_arch,ksl.process.__version__)
     o = optparse.OptionParser(usage=usage_str)
     c = cfgparse.ConfigParser(allow_py=True)
 
@@ -60,10 +60,13 @@ def main():
 
     ### Run Options
     og = optparse.OptionGroup(o, "GENERAL")
+    og.add_option("--version", action="store_true", default=False,
+                  help="print version string and exit")
+
     og.add_option("-v", "--verbose", action="store_true", 
                  help="print informational status messages to stdout")
     c.add_option('verbose')
-    
+
     og.add_option("-d", "--debug", action="store_true",
                  help="enable debug mode (developer use)")
     c.add_option('debug')
@@ -143,6 +146,10 @@ def main():
     
     (options, args) = c.parse(o)
 
+    if options.version:
+        print "kslrun: ",ksl.process.__version__
+        return
+
     if not args:
         raise Exception("It appears you forgot to specify an executable!")
 
@@ -207,7 +214,7 @@ def main():
         #    if len(llerr):
         # silent ignore currently
         #        logger.error(llerr)
-
+        
         longllqid = llout.split(' ')[1]
 
         if host_arch == 'ppc64':
@@ -328,6 +335,13 @@ if __name__ == "__main__":
     try:
         main()
     except SystemExit, e:
+        raise
+    except KeyboardInterrupt, e:
+        print """
+================================================================================
+||                           *Interrupted by user*                            ||
+================================================================================
+"""
         raise
     except:
         print """
