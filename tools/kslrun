@@ -2,6 +2,7 @@
 
 import os, re, sys, select, subprocess, logging, time, string, optparse
 import cfgparse, tempfile, shutil, inspect
+import ksl
 
 bgp_template = string.Template('''#!/usr/bin/env bash
 #
@@ -50,7 +51,7 @@ ${done_command}
 def main():
     # mode depends on if we are running on neser or shaheen
     host_arch = os.uname()[4]
-    usage_str = "usage: kslrun [options] exe_with_args\nSee /opt/share/ksl/system/config/%s/kslrun.py for default arguments" % host_arch
+    usage_str = "kslrun %s\nusage: kslrun [options] exe_with_args\nSee /opt/share/ksl/system/config/%s/kslrun.py for default arguments" % (ksl.process.__version__,host_arch)
     o = optparse.OptionParser(usage=usage_str)
     c = cfgparse.ConfigParser(allow_py=True)
 
@@ -126,7 +127,7 @@ def main():
 
     o.add_option_group(og)
 
-    # check /opt/share/ksl/system/config/$arch/kslrun.py, ~/.kslrun.py, and ./.kslrun.py
+    # check /opt/share/ksl/system/config/$arch/kslrun.py, ~/.kslrun.py, ./.kslrun.py, and KSL_RUN_CONFIG
     sysfile = '/opt/share/ksl/system/config/%s/kslrun.py' % host_arch
     if os.path.isfile(sysfile):
         c.add_file(sysfile)
@@ -136,8 +137,14 @@ def main():
     herefile = '.kslrun.py'
     if os.path.isfile(herefile):
         c.add_file(herefile)
+    if 'KSL_RUN_CONFIG' in os.environ:
+        if os.path.isfile(os.environ['KSL_RUN_CONFIG']):
+            c.add_file(os.environ['KSL_RUN_CONFIG'])
     
     (options, args) = c.parse(o)
+
+    if not args:
+        raise Exception("It appears you forgot to specify an executable!")
 
     if options.debug:
         logging.basicConfig(level=logging.DEBUG,

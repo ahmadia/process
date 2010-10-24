@@ -8,8 +8,9 @@ import logging
 import logging.handlers
 from optparse import OptionParser
 import string
-from ksl.install.installer import installer
-from ksl.install.installer import getch
+import ksl.process
+from ksl.process.install.installer import installer
+from ksl.process.install.installer import getch
 
 def main():
     (options, args) = get_options()
@@ -44,73 +45,113 @@ def main():
                 raise
 
 def get_options():
+    host_arch = os.uname()[4]
+    usage_str = "kslinstall %s\nusage: kslinstall [options] install_file\nSee /opt/share/ksl/system/config/%s/kslinstall.py for default arguments" % (ksl.process.__version__,host_arch)
 
-    builddir = "./builddir_%s" % os.uname()[4]
-    module_cmd = "/opt/share/ksl/modules/3.2.7b/%s/Modules/3.2.7/bin/modulecmd" % os.uname()[4]
+    o = optparse.OptionParser(usage=usage_str)
+    c = cfgparse.ConfigParser(allow_py=True)
+
+    og = optparse.OptionGroup(o, "GENERAL")
+    og.add_option("-v", "--verbose",
+                  action="store_true", 
+                  help="print informational messages to stdout")
+    c.add_option('verbose')
+
+    og.add_option("-f", "--force",
+                  action="store_true", 
+                  help="clobber target directories and files")
+    c.add_option('force')
+
+    og.add_option("-k", "--keep_going",
+                  action="store_false", dest="errors_fatal",
+                  help="Do not abort if any variant builds fail")
+    c.add_option('errors_fatal')
     
-    parser = OptionParser()
-    parser.add_option("-q", "--quiet",
-                      action="store_false", dest="verbose", default=True,
-                      help="silence informational status messages")
-    parser.add_option("-f", "--force",
-                      action="store_true", dest="force", default=False,
-                      help="clobber target directories and files")
-    parser.add_option("-r", "--root",
-                      action="store", dest="root", default="/opt/share/ksl",
-                      help="root directory to install to (default: /opt/share/ksl)")
-    parser.add_option("-s", "--source_paths",
-                      action="store", dest="source_paths",
-                      default="/opt/share/ksl/system/sources",
-                      help="source paths to search " +\
-                      "(default: /opt/share/ksl/system/sources)")
-    parser.add_option("-o", "--overlay_paths",
-                      action="store", dest="overlay_paths",
-                      default="/opt/share/ksl/system/overlays",
-                      help="overlay paths to search " +\
-                      "(default: /opt/share/ksl/system/overlays)")
-    parser.add_option("-p", "--patch_paths",
-                      action="store", dest="patch_paths",
-                      default="/opt/share/ksl/tools/process/patches",
-                      help="patch paths to search " +\
-                      "(default: /opt/share/ksl/tools/process/patches)")
-    parser.add_option("-b", "--build_dir",
-                      action="store", dest="build_dir", default=builddir,
-                      help="working build directory (default: %s)" % builddir)
-    parser.add_option("-c", "--module_cmd",
-                      action="store", dest="module_cmd",
-                      default=module_cmd,
-                      help="module command " + \
-                      " default: %s" % module_cmd)
-    parser.add_option("-m", "--root_module_dir",
-                      action="store", dest="root_module_dir",
-                      default="/opt/share/ksl/modules",
-                      help="root module directory to install to" + \
-                      " (default: /opt/share/ksl/modules")
-    parser.add_option("-i", "--ignore_errors",
-                      action="store_false", dest="errors_fatal",
-                      default=True,
-                      help="Do not abort if any variant builds fail")
-    parser.add_option("-z", "--interactive",
-                      action="store_true", dest="interactive",
-                      default=False,
-                      help="Ask which steps to apply")
-    parser.add_option("-t", "--module_template",
-                      action="store", dest="module_template",
-                      default="/opt/share/ksl/tools/process/templates/module.ksl",
-                      help="template module file " + \
-                      "(default: /opt/share/ksl/tools/process/templates/module.ksl")
-    parser.add_option("--no_install",
-                      action="store_false", dest="do_install",
-                      default=True,
-                      help="Don't install builds")                      
-    parser.add_option("--no_module",
-                      action="store_false", dest="do_module", default=True,
-                      help="Don't install modulefiles")                      
+    og.add_option("-z", "--interactive",
+                  action="store_true", dest="interactive",
+                  help="Pause for confirmation on each job step")
+    c.add_option('interactive')
+    
+    og.add_option('-n', "--no_install",
+                 action="store_false", dest="do_install",
+                 help="Skip build/install steps (install module files only)")
+    c.add_option('do_install')
+    
+    og.add_option('-m', "--no_module",
+                 action="store_false", dest="do_module", 
+                 help="Skip installing modulefiles (build/install steps only)")                      
+    c.add_option('do_module')
 
+    og.add_option("-c", "--module_cmd",
+                 action="store", dest="module_cmd",
+                 help="module command")
+    c.add_option('module_cmd')
+
+    o.add_option_group(og)
+    
+    og = optparse.OptionGroup(o, "INPUT PATHS")
+
+    og.add_option("-s", "--source_paths",
+                      action="store", dest="source_paths",
+                      help="source paths to search ")
+    c.add_option('source_paths')
+
+    og.add_option("-o", "--overlay_paths",
+                      action="store", dest="overlay_paths",
+                      help="overlay paths to search")
+    c.add_option('overlay_paths')
+    
+    og.add_option("-p", "--patch_paths",
+                      action="store", dest="patch_paths",
+                      help="patch paths to search")
+    c.add_option('patch_paths')
+
+    og.add_option("-t", "--module_template",
+                  action="store", dest="module_template",
+                  help="template module file ")
+    c.add_option('module_template')
+
+    o.add_option_group(og)
+    
+    og = optparse.OptionGroup(o, "OUTPUT PATHS")
+
+    og.add_option("-b", "--build_dir",
+                  action="store", dest="build_dir", 
+                  help="working directory for builds")
+    c.add_option('build_dir')
+
+    og.add_option("-r", "--root_install_dir",
+                  action="store", dest="root_install_dir",
+                  help="root directory to install packages to")
+    c.add_option('root_install_dir')
+        
+    og.add_option("-m", "--root_module_dir",
+                  action="store", dest="root_module_dir",
+                  help="root module directory to install modulefiles to")
+    c.add_option('root_module_dir')
+
+    o.add_option_group(og)
+
+    # check /opt/share/ksl/system/config/$arch/kslinstall.py, ~/.kslinstall.py, ./.kslinstall.py, and $KSL_INSTALL_CONFIG
+    sysfile = '/opt/share/ksl/system/config/%s/kslinstall.py' % host_arch
+    if os.path.isfile(sysfile):
+        c.add_file(sysfile)
+    homefile = os.path.expanduser('~/.kslinstall.py')
+    if os.path.isfile(homefile):
+        c.add_file(homefile)
+    herefile = '.kslinstall.py'
+    if os.path.isfile(herefile):
+        c.add_file(herefile)
+    if 'KSL_INSTALL_CONFIG' in os.environ:
+        if os.path.isfile(os.environ['KSL_INSTALL_CONFIG']):
+            c.add_file(os.environ['KSL_INSTALL_CONFIG'])
+    
+    (options, args) = c.parse(o)
+    
     (options, args) = parser.parse_args()
 
     if not args:
-        raise Exception("You forget to specify an install file!")
+        raise Exception("It appears you forgot to specify an install file!")
     return (options, args)
 
 def setup_installer_log(options):
@@ -136,7 +177,7 @@ def setup_installer_log(options):
 
 def setup_target_dir(variant, options):
     variant.target_dir = join(
-        variant.root,variant.name,variant.version,variant.target_arch+variant.tag)
+        variant.root_install_dir,variant.name,variant.version,variant.target_arch+variant.tag)
 
 def setup_module_dir(variant, options):
     log = logging.getLogger('ksl.installer')
@@ -239,7 +280,7 @@ def parse_install_file(options, args):
 
     execfile(installfile,globals())
     for variant in variants:
-        variant.root = options.root
+        variant.root_install_dir = options.root_install_dir
         variant.source_paths = options.source_paths
         variant.patch_paths = options.patch_paths
         variant.overlay_paths = options.overlay_paths
