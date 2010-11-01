@@ -3,24 +3,27 @@
 from distutils.core import setup
 import os
 
+def get_files(dir):
+    return [os.path.join(dir,file) for file in os.listdir(dir) if os.path.isfile(file)]
+
 setup(name='Process',
       version='0.1.0',
       description='Automation tools for high performance computing environments',
       author='Aron Ahmadia',
       author_email='aron@ahmadia.net',
       url='http://bitbucket.org/ahmadia/process',
-      packages=['ksl'],
-      scripts=['tools/kslinstall','tools/kslrun'],
-      data_files=[('config/ppc64',['config/ppc64/kslinstall.py','config/ppc64/kslrun.py']),
-                  ('config/x86_64',['config/x86_64/kslinstall.py','config/x86_64/kslrun.py']),
-                  ('examples',os.listdir('examples')),
-                  ('patches',os.listdir('patches')),
-                  ('templates',['templates/module.ksl']),
-                  ('test/sanity',os.listdir('test/sanity')),
-                  ('test/system',os.listdir('test/system')),
+      packages=['ksl','ksl.process','ksl.process.install'],
+      scripts=['scripts/kslinstall','scripts/kslrun'],
+      data_files=[('examples',get_files('examples')),
+                  ('examples/patches',get_files('examples/patches')),
+                  ('system/config/ppc64',['system/config/ppc64/kslinstall.py','system/config/ppc64/kslrun.py']),
+                  ('system/config/x86_64',['system/config/x86_64/kslinstall.py','system/config/x86_64/kslrun.py']),
+                  ('system/modules/ppc64/compilers',get_files('system/modules/ppc64/compilers')),
+                  ('system/modules/x86_64/compilers',get_files('system/modules/x86_64/compilers')),
+                  ('system/modules/shared/tools',get_files('system/modules/shared/tools')),
+                  ('system/templates',['system/templates/module.ksl']),
+                  ('test/sanity',get_files('test/sanity')),
+                  ('test/system',get_files('test/system')),
                   ('test',['test/__init__.py','test/test_sanity.py']),
-                  ('system_modules/ppc64/compilers',os.listdir('system_modules/ppc64/compilers')),
-                  ('system_modules/x86_64/compilers',os.listdir('system_modules/x86_64/compilers')),
-                  ('system_modules/shared/tools',os.listdir('system_modules/shared/tools')),
                   ]
      )
