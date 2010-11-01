@@ -149,6 +149,9 @@ def get_options():
         print "kslinstall: ",ksl.process.__version__
         sys.exit(0)
 
+    if options.interactive:
+        options.verbose = True
+
     if not args:
         raise Exception("It appears you forgot to specify an install file!")
     return (options, args)
