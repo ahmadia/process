@@ -4,9 +4,9 @@ from distutils.core import setup
 import os
 
 def get_files(dir):
-    return [os.path.join(dir,file) for file in os.listdir(dir) if os.path.isfile(file)]
+    return [os.path.join(dir,_file) for _file in os.listdir(dir) if os.path.isfile(os.path.join(dir,_file))]
 
-setup(name='Process',
+setup(name='process',
       version='0.1.0',
       description='Automation tools for high performance computing environments',
       author='Aron Ahmadia',

@@ -1,6 +1,6 @@
 # -*- python -*-
 # Tcl installation file, KSL supercomputing team
-from ksl.install.installer import *
+from ksl.process.install.installer import *
 import os
 from copy import copy
 

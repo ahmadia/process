@@ -1,6 +1,6 @@
 # -*- python -*-
 # Petsc installation file, KSL supercomputing team
-from ksl.install.installer import *
+from ksl.process.install.installer import *
 from copy import copy
 from string import Template
 
