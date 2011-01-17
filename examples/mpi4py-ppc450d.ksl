@@ -1,0 +1,47 @@
+# -*- python -*-
+# mpi4py 1.2.2 installation file, KSL supercomputing team
+from ksl.process.install.installer import *
+from copy import copy
+from string import Template
+
+base = installer()
+variants = []
+
+base.name='mpi4py'
+base.version='1.2.2'
+base.release='1'
+base.license='BSD'
+base.vendor='Lisandro Dalcin'
+base.url='http://code.google.com/p/mpi4py/'
+base.summary='MPI bindings for Python!'
+base.packager='aron'
+base.source='mpi4py-1.2.2.tar.gz'
+base.category='scientific libraries'
+base.description=\
+"""
+"""
+
+base.paths    = []
+base.binaries = []
+base.includes=['./lib/python/mpi4py/include/']
+base.libdirs=['./lib/python/mpi4py/lib']
+base.libs=[]
+base.compile_modules=['python']
+base.required_modules=[]
+base.notes="""
+"""
+base.tag = ''
+
+s1 = (templated_shell_command,
+      Template('python setup.py -v build --compiler=mpixlc install --home=$target_dir'))
+
+ppc450d_install = s1, 
+
+ppc450d = copy(base)
+ppc450d.build_host = 'ppc64'
+ppc450d.install_steps = ppc450d_install
+ppc450d.target_arch = 'ppc450d'
+ppc450d.mod_magic = ''
+variants.append(ppc450d)
+
+
