@@ -4,6 +4,7 @@ import os, sys, shutil, subprocess, logging, string, optparse, cfgparse
 import ksl.process, logging.handlers
 from ksl.process.install.installer import installer
 from ksl.process.install.installer import getch
+from datetime import datetime
 
 def main():
     (options, args) = get_options()
@@ -178,13 +179,13 @@ def setup_installer_log(options):
 
 
 def setup_target_dir(variant, options):
-    variant.target_dir = join(
+    variant.target_dir = os.path.join(
         variant.root_install_dir,variant.name,variant.version,variant.target_arch+variant.tag)
 
 def setup_module_dir(variant, options):
     log = logging.getLogger('ksl.installer')
 
-    variant_modules_dir = join(options.root_module_dir, variant.target_arch, variant.name)
+    variant_modules_dir = os.path.join(options.root_module_dir, variant.target_arch, variant.name)
     if not os.path.exists(variant_modules_dir):
         log.info("creating empty directory %s" % variant_modules_dir)
         os.makedirs(variant_modules_dir)
@@ -192,7 +193,7 @@ def setup_module_dir(variant, options):
     module_name = variant.version+variant.tag
  
     if variant.tag == "":
-        version_file = join(variant_modules_dir,'.version')
+        version_file = os.path.join(variant_modules_dir,'.version')
         if os.path.exists(version_file):
             if not options.force:
                 print("Can I clobber module default version file %s? [y/n]: " % version_file)
@@ -211,7 +212,7 @@ def setup_module_dir(variant, options):
     else:
         log.info("installing non-default variant to module %s" % module_name)
         
-    variant.module_file = join(variant_modules_dir, module_name)
+    variant.module_file = os.path.join(variant_modules_dir, module_name)
 
 def clobber_dir(variant, clobber_dir, options):
     log = logging.getLogger('ksl.installer')
@@ -231,27 +232,27 @@ def clobber_dir(variant, clobber_dir, options):
 
 def setup_package_logs(variant):
     root = '/opt/share/ksl/system/logs/installs'
-    prefix = variant.name+'-'+variant.version+'-'+variant.release+'_'+variant.target_arch+variant.tag
+    prefix = variant.name+'-'+variant.version+'-'+variant.release+'-'+str(datetime.date(datetime.today()))+str(datetime.time(datetime.now()))+'_'+variant.target_arch+variant.tag
 
     logf = logging.Formatter('%(asctime)s %(name)s:\n%(message)s')
 
-    logname = join(root,prefix+'_install.log')
+    logname = os.path.join(root,prefix+'_install.log')
     plog = logging.FileHandler(logname,'w')
     plog.setFormatter(logf)
     
     logging.getLogger('ksl.installer.package').addHandler(plog)
 
-    configurelog = logging.FileHandler(join(root,prefix+'_configure.log'),'w')
+    configurelog = logging.FileHandler(os.path.join(root,prefix+'_configure.log'),'w')
     configurelog.setFormatter(logf)
     configurelog.propagate=False
     logging.getLogger('ksl.installer.package.configure').addHandler(configurelog)
 
-    patchlog = logging.FileHandler(join(root,prefix+'_patch.log'),'w')
+    patchlog = logging.FileHandler(os.path.join(root,prefix+'_patch.log'),'w')
     patchlog.setFormatter(logf)
     patchlog.propagate=False
     logging.getLogger('ksl.installer.package.patch').addHandler(patchlog)
 
-    makelog = logging.FileHandler(join(root,prefix+'_make.log'),'w')
+    makelog = logging.FileHandler(os.path.join(root,prefix+'_make.log'),'w')
     makelog.setFormatter(logf)
     makelog.propagate=False
     logging.getLogger('ksl.installer.package.make').addHandler(makelog)
@@ -287,7 +288,7 @@ def parse_install_file(options, args):
         variant.patch_paths = options.patch_paths
         variant.overlay_paths = options.overlay_paths
         variant_build_path = variant.name+'-'+variant.version+variant.tag
-        variant.build_dir = join(options.build_dir,variant_build_path)
+        variant.build_dir = os.path.join(options.build_dir,variant_build_path)
         variant.module_cmd = options.module_cmd
         variant.module_template = options.module_template
         

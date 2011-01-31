@@ -1,0 +1,4 @@
+include *.txt
+recursive-include examples *.ksl
+recursive-include system *
+recursive-include test * 

@@ -3,7 +3,7 @@ import tarfile
 import logging
 import subprocess
 import os
-from os.path import exists, join, abspath, splitext, normpath
+from os.path import exists, join, abspath, normpath
 from os import pathsep, chdir
 from string import split
 from string import Template
@@ -88,7 +88,7 @@ class installer:
 
         self.mod_libpaths  = ":".join(add_root(p) for p in self.libdirs)
 
-        lib_strip = lambda l: splitext(l)[0].replace('lib','-l')
+        lib_strip = lambda l: l.replace('lib','-l').replace('.a','').replace('.so','')
         if not self.libs:
             self.mod_libs     = ""
         else:
@@ -129,7 +129,7 @@ class installer:
     def unload_modules(self):
         self.log.info("clearing modules")
         self.module('purge')
-        self.module('load init genie')
+        self.module('load init')
 
     def load_modules(self):
         # always load genie when using modules to get common environment variables
@@ -287,15 +287,21 @@ class installer:
                              shell=True, stdout=subprocess.PIPE ,stderr=subprocess.STDOUT)
         (commands, ignore) = p.communicate()
 
-        err_msg = "Error issuing module command: %s\n%s" % (module_args, commands)
         if p.returncode is not None and p.returncode % 256:
+            err_msg = "Error issuing module processing command: %s\n%s" % (module_args, commands)
             self.log.error(err_msg)
             raise Exception(err_msg)
         try:
             exec commands
         except Exception,err:
+            err_msg = "Error issuing module command: %s\n%s" % (module_args, commands)
             self.log.error(err_msg)
             raise Exception(err_msg)
+
+# modules breaks itself, needs a patch...
+        if module_args=='purge':
+            os.environ['LOADEDMODULES'] = ''
+            os.environ['__LMFILES__'] = ''
         
     def find_file(self, filename, search_path):
         file_found = False

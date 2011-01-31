@@ -1,0 +1,52 @@
+# -*- python -*-
+from ksl.process.install.installer import configure, make, make_install
+from copy import copy
+from string import Template
+
+base = installer()
+variants = []
+
+base.name='swig'
+base.version='1.3.40'
+base.release='1'
+base.license='GPL'
+base.vendor='Beazley, et al'
+base.url='http://swig.org/'
+base.summary='software wrapper interface generator'
+base.packager='aron'
+base.source='swig-1.3.40.tar.gz'
+base.category='tools'
+base.description=\
+"""SWIG is a software development tool that connects programs written in C and C++ with a variety of high-level programming languages. SWIG is used with different types of target languages including common scripting languages such as Perl, PHP, Python, Tcl and Ruby. The list of supported languages also includes non-scripting languages such as C#, Common Lisp (CLISP, Allegro CL, CFFI, UFFI), Go language, Java, Lua, Modula-3, OCAML, Octave and R. Also several interpreted and compiled Scheme implementations (Guile, MzScheme, Chicken) are supported. SWIG is most commonly used to create high-level interpreted or compiled programming environments, user interfaces, and as a tool for testing and prototyping C/C++ software. SWIG is typically used to parse C/C++ interfaces and generate the 'glue code' required for the above target languages to call into the C/C++ code. SWIG can also export its parse tree in the form of XML and Lisp s-expressions. SWIG is free software and the code that SWIG generates is compatible with both commercial and non-commercial projects.
+"""
+
+base.paths    = ['./bin']
+base.binaries = ['swig']
+base.includes=['./include']
+base.libdirs=['./lib']
+base.libs=[]
+base.required_modules=['python/2.7.1']
+base.notes="""
+"""
+
+s1 = (configure, '--with-python=$KSL_PYTHON_DIR/bin/python')
+s2 = make
+s3 = make_install
+
+base.install_steps = (s1, s2, s3)
+
+base.tag = ''
+
+x86_64 = copy(base)
+x86_64.build_host = 'x86_64'
+x86_64.compile_modules=['gnu']
+x86_64.target_arch = 'x86_64'
+
+variants.append(x86_64)
+
+x86_64_intel = copy(base)
+x86_64_intel.build_host = 'x86_64'
+x86_64_intel.compile_modules=['intel']
+x86_64_intel.target_arch = 'x86_64'
+x86_64_intel.tag = '-intel'
+variants.append(x86_64_intel)
