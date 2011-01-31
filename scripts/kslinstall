@@ -232,7 +232,7 @@ def clobber_dir(variant, clobber_dir, options):
 
 def setup_package_logs(variant):
     root = '/opt/share/ksl/system/logs/installs'
-    prefix = variant.name+'-'+variant.version+'-'+variant.release+'-'+str(datetime.date(datetime.today()))+str(datetime.time(datetime.now()))+'_'+variant.target_arch+variant.tag
+    prefix = variant.name+'-'+variant.version+'-'+variant.release+'-'+str(datetime.date(datetime.today()))+"-"+str(datetime.time(datetime.now()))+'_'+variant.target_arch+variant.tag
 
     logf = logging.Formatter('%(asctime)s %(name)s:\n%(message)s')
 
