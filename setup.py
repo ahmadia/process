@@ -7,7 +7,7 @@ def get_files(dir):
     return [os.path.join(dir,_file) for _file in os.listdir(dir) if os.path.isfile(os.path.join(dir,_file))]
 
 setup(name='process',
-      version='0.1.0',
+      version='0.1.1',
       description='Automation tools for high performance computing environments',
       author='Aron Ahmadia',
       author_email='aron@ahmadia.net',
