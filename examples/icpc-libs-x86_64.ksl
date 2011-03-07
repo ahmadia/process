@@ -1,0 +1,46 @@
+# -*- python -*-
+from ksl.process.install.installer import *
+from copy import copy
+import os
+
+base = installer()
+variants = []
+
+base.name='icpc_libs'
+base.version='11.1'
+base.release='1'
+base.license="commercial"
+base.vendor="Intel"
+base.url="http://software.intel.com/en-us/articles/intel-compilers/"
+base.summary=                       """Intel Compiler Libraries for x86_64""" 
+base.packager='aron'
+base.source=''
+base.category='math'
+base.description=\
+"""
+This module supports mixed-language programs by providing the Intel
+C/C++ base libraries and linker paths.  
+"""
+
+base.paths    = []
+base.binaries = []
+base.includes=[]
+base.libdirs=['/opt/share/intel/Compiler/11.1/059/lib/intel64']
+base.required_modules = []
+base.compile_modules=[]
+base.libs=['libirc.a','libstdc++.so']
+base.notes="No multithreading support"
+
+base.install_steps = ()
+
+base.tag = ''
+
+x86_64 = copy(base)
+x86_64.build_host = 'x86_64'
+x86_64.target_arch = 'x86_64'
+variants.append(x86_64)
+
+
+
+
+

@@ -53,16 +53,16 @@ base.tag = ''
 x86_64 = copy(base)
 x86_64.build_host = 'x86_64'
 x86_64.install_steps = x86_64_install
-x86_64.compile_modules=['gnu']
+x86_64.compile_modules=['intel']
 x86_64.target_arch = 'x86_64'
 x86_64.mod_magic = 'prepend-path PYTHONPATH $::env(KSL_PYTHON_DIR)/lib/python2.7'
 variants.append(x86_64)
 
 
-x86_64_intel = copy(base)
-x86_64_intel.build_host = 'x86_64'
-x86_64_intel.install_steps = x86_64_install
-x86_64_intel.compile_modules=['intel']
-x86_64_intel.target_arch = 'x86_64'
-x86_64_intel.tag = '-intel'
-variants.append(x86_64_intel)
+x86_64_gnu = copy(base)
+x86_64_gnu.build_host = 'x86_64'
+x86_64_gnu.install_steps = x86_64_install
+x86_64_gnu.compile_modules=['gnu']
+x86_64_gnu.target_arch = 'x86_64'
+x86_64_gnu.tag = '-gnu'
+variants.append(x86_64_gnu)

@@ -25,7 +25,7 @@ base.binaries = []
 base.includes=['./include']
 base.libdirs=['./lib']
 base.libs=['libreadline','libncurses']
-base.compile_modules=['gnu','ppc64_target']
+base.compile_modules=[]
 base.required_modules=[]
 base.notes=""
 
@@ -46,14 +46,15 @@ variants.append(ppc64)
 
 x86_64 = copy(base)
 x86_64.build_host = 'x86_64'
-x86_64.compile_modules=['gnu']
+x86_64.compile_modules=['intel']
+x86_64.required_modules=['icpc_libs']
 x86_64.target_arch = 'x86_64'
 
 variants.append(x86_64)
 
-x86_64_intel = copy(base)
-x86_64_intel.build_host = 'x86_64'
-x86_64_intel.compile_modules=['intel']
-x86_64_intel.target_arch = 'x86_64'
-x86_64_intel.tag = '-intel'
-variants.append(x86_64_intel)
+x86_64_gnu = copy(base)
+x86_64_gnu.build_host = 'x86_64'
+x86_64_gnu.compile_modules=['gnu']
+x86_64_gnu.target_arch = 'x86_64'
+x86_64_gnu.tag = '-gnu'
+variants.append(x86_64_gnu)

@@ -3,11 +3,13 @@ import tarfile
 import logging
 import subprocess
 import os
+import mako
 from os.path import exists, join, abspath, normpath
 from os import pathsep, chdir
 from string import split
 from string import Template
 from inspect import getmembers
+from process.util import Bunch
 
 class installer:
     def __init__(self, data=None):
@@ -116,9 +118,13 @@ class installer:
         handle.write(module_data)
         handle.close()
 
-    def add_system_install_steps(self):
+    def add_system_install_steps(self):        
         self.install_steps = list(self.install_steps)
-        
+
+        if len(self.install_steps)==0:
+            self.virtual_install=True
+            return
+
         if self.install_steps[0] is not load_modules:
             self.install_steps.insert(0, load_modules)
         if self.install_steps[1] is not unpack_source:
@@ -221,6 +227,7 @@ class installer:
         command(argtuple)
 
     def shell_command(self, command, log_file=''):
+        """executes the string in command as a shell command"""
         if log_file is not '':
             log = logging.getLogger('ksl.installer.package.%s' % log_file)
         else:
@@ -242,6 +249,7 @@ class installer:
             raise Exception(err_msg)
         
     def templated_shell_command(self, command_template, log_file=''):
+        """simple application of variables available in self to the string template before execution as a command"""
         if log_file is not '':
             log = logging.getLogger('ksl.installer.package.%s' % log_file)
         else:
@@ -264,6 +272,22 @@ class installer:
             err_msg = "command %s failed, see log for details" % command
             log.error(err_msg)
             raise Exception(err_msg)
+
+    def apply_templated_file(self, template_filename, out_filename, log_file):
+        """applies the os environment dictionary to the file specified in template_filename using the Mako templating
+        engine and writes the results to the file specified by out_filename"""
+        
+        if log_file is not '':
+            log = logging.getLogger('ksl.installer.package.%s' % log_file)
+        else:
+            log = self.log
+        log.info('applying local environment variables to template file %s to produce %s' %
+                 (template_in, file_out))
+        makoplate = mako.template.Template(filename=template_filename)
+        outfile = open(out_filename)        
+        context = mako.runtime.Context(outfile, )
+        makoplate.render_context(context)
+        outfile.close()
 
     def rebase(self):
         if self.virtual_install:
