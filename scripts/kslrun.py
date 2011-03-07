@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import os, re, sys, select, subprocess, logging, time, string, optparse
-import cfgparse, tempfile, shutil, inspect
+import os, re, sys, select, subprocess, logging, time, string
+import tempfile, shutil, inspect
 import ksl.process
 
 bgp_template = string.Template('''#!/usr/bin/env bash
@@ -20,7 +20,9 @@ bgp_template = string.Template('''#!/usr/bin/env bash
 
 # @ queue
 
-/bgsys/drivers/ppcfloor/bin/mpirun -exp_env LD_LIBRARY_PATH -env BG_MAPPING=${bg_map} -np ${np} -mode ${mode} ${command}
+export LD_LIBRARY_PATH=$${KSL_PPC450D_LD_LIBRARY_PATH}
+export PYTHONPATH=$${KSL_PPC450D_PYTHONPATH}
+/bgsys/drivers/ppcfloor/bin/mpirun -exp_env LD_LIBRARY_PATH -exp_env PYTHONPATH -env BG_MAPPING=${bg_map} -np ${np} -mode ${mode} ${command}
 ${done_command}
 ''')
 
@@ -51,107 +53,16 @@ ${done_command}
 def main():
     # mode depends on if we are running on neser or shaheen
     host_arch = os.uname()[4]
-    usage_str = "usage: kslrun [options] exe_with_args\nSee /opt/share/ksl/system/config/%s/kslrun.py for default arguments\nkslrun %s" % (host_arch,ksl.process.__version__)
-    o = optparse.OptionParser(usage=usage_str)
-    c = cfgparse.ConfigParser(allow_py=True)
 
-#    c.add_optparse_help_option(o)
-
-
-    ### Run Options
-    og = optparse.OptionGroup(o, "GENERAL")
-    og.add_option("--version", action="store_true", default=False,
-                  help="print version string and exit")
-
-    og.add_option("-v", "--verbose", action="store_true", 
-                 help="print informational status messages to stdout")
-    c.add_option('verbose')
-
-    og.add_option("-d", "--debug", action="store_true",
-                 help="enable debug mode (developer use)")
-    c.add_option('debug')
-
-    og.add_option("-r", "--no_std_redirect", action="store_true",
-                 help="disable stdout/stderr redirection")
-    c.add_option('no_std_redirect')
-    
-    og.add_option("-k", "--keep_ll_file", action="store_true",
-                 help="do not delete LoadLeveler file after run")
-    c.add_option('keep_ll_file')
-
-    og.add_option('--no_notify', action="store_true",
-                 help="do not send a notification email when job completes")
-
-    o.add_option_group(og)
-
-    ### LoadLeveler Options
-    og = optparse.OptionGroup(o, "LOADLEVELER")
-    og.add_option("--prefix", type='string',
-                 help='prefix for output files (only meaningful if no_std_redirect is enabled')
-    c.add_option('prefix')
-    
-    og.add_option("-j", "--job_name", type='string',
-                 help="job_name as passed to LoadLeveler")
-    c.add_option('job_name')
-
-    og.add_option('-t', "--wall_time", type='string',
-                 help="job wall_time as passed to LoadLeveler")
-    c.add_option('wall_time')
-
-    og.add_option('-c', "--ll_class", type='string',
-                 help="job class as passed to LoadLeveler")
-    c.add_option('ll_class')
-      
-    og.add_option("-a", "--account", type='string',
-                 help="account number to charge")
-    c.add_option('account')
-
-    og.add_option("-p", "--partition_size", type='int', 
-                  help="number of nodes to request")
-    c.add_option('partition_size')
-
-    o.add_option_group(og)
-
-    ### MPI Options
-    og = optparse.OptionGroup(o, "MPI")
-    og.add_option("-n", "--np", type='int',
-                 help="number of MPI processes to request")
-    c.add_option('np')
-
-    ### BGP-specific
-    if host_arch == 'ppc64':
-        og.add_option("-m", "--mode", type='string',
-                      help="MPI mode to use (e.g. VN, DUAL, SMP)")
-        c.add_option('mode')
-
-        og.add_option("--map", type='string', dest='bg_map',
-                      help="mapping of logical MPI processes to physical nodes/cores (e.g. XYZT, TXYZ, ...)")
-        c.add_option('bg_map')
-
-    o.add_option_group(og)
-
-    # check /opt/share/ksl/system/config/$arch/kslrun.py, ~/.kslrun.py, ./.kslrun.py, and KSL_RUN_CONFIG
-    sysfile = '/opt/share/ksl/system/config/%s/kslrun.py' % host_arch
-    if os.path.isfile(sysfile):
-        c.add_file(sysfile)
-    homefile = os.path.expanduser('~/.kslrun.py')
-    if os.path.isfile(homefile):
-        c.add_file(homefile)
-    herefile = '.kslrun.py'
-    if os.path.isfile(herefile):
-        c.add_file(herefile)
-    if 'KSL_RUN_CONFIG' in os.environ:
-        if os.path.isfile(os.environ['KSL_RUN_CONFIG']):
-            c.add_file(os.environ['KSL_RUN_CONFIG'])
-    
-    (options, args) = c.parse(o)
+    parser = build_parser(host_arch)
+    config_tuple = get_file_config(host_arch)
+    config_strings = ['--'+arg+'='+value for arg,value in config_tuple]
+    file_options = parser.parse_args(config_strings)
+    options = parser.parse_args(namespace=file_options)
 
     if options.version:
-        print "kslrun: ",ksl.process.__version__
+        print("kslrun: "+ksl.process.__version__)
         return
-
-    if not args:
-        raise Exception("It appears you forgot to specify an executable!")
 
     if options.debug:
         logging.basicConfig(level=logging.DEBUG,
@@ -167,16 +78,11 @@ def main():
 
     logger.debug("options")
     logger.debug(options)
-    logger.debug("args")
-    logger.debug(args)
-
-    if not args:
-        raise Exception("No executable was specified to kslrun!")
 
     tempdir = tempfile.mkdtemp()
 
     try:
-        if not options.no_std_redirect:
+        if not options.no_std_redirect and not options.generate_only:
             logger.info("setting up job_out/job_err named pipes in temporary directory")
             job_out_name = os.path.join(tempdir, "job_out")
             job_err_name = os.path.join(tempdir, "job_err")
@@ -197,7 +103,7 @@ def main():
         logger.info("setting up LoadLeveler submission script")    
 
         ll_dict = dict(inspect.getmembers(options))
-        ll_dict['command'] = string.join(args)
+        ll_dict['command'] = ''.join(options.command)
         ll_dict['job_out_name'] = job_out_name
         ll_dict['job_err_name'] = job_err_name
         ll_dict['done_command'] = done_command
@@ -208,6 +114,11 @@ def main():
             ll_dict['notification'] = 'always'
 
         llfilename = setup_ll_file(options, host_arch, ll_dict, tempdir)
+
+        if options.generate_only:
+            logger.info("Generate only -- returning")
+            return
+        
         logger.info("submitting to LoadLeveler")
         (llout, llerr) = call_command("llsubmit " + llfilename)
         logger.info(llout)
@@ -215,7 +126,7 @@ def main():
         # silent ignore currently
         #        logger.error(llerr)
         
-        longllqid = llout.split(' ')[1]
+        longllqid = str(llout).split(' ')[1]
 
         if host_arch == 'ppc64':
             fen = 'fen1-a'
@@ -240,17 +151,103 @@ def main():
         raise
     cleanup(options, logger, tempdir)
 
+def build_parser(host_arch):
+    import argparse
+    usage_str = "kslrun [optional arguments] command\nSee /opt/share/ksl/system/config/%s/kslrun.ini for default arguments\nkslrun %s" % (host_arch,ksl.process.__version__)
+    parser = argparse.ArgumentParser(usage=usage_str)
+
+    parser.add_argument('command', type=str, nargs='?', help='Command string to forward to mpirun')
+
+    ### Run Options
+    og = parser.add_argument_group("General ")
+    og.add_argument("--version", action="store_true", default=False,
+                  help="print version string and exit")
+
+    og.add_argument("-v", "--verbose", action="store_true", 
+                 help="print informational status messages to stdout")
+
+    og.add_argument("-d", "--debug", action="store_true",
+                 help="enable debug mode (developer use)")
+
+    og.add_argument("-i", "--interactive", action="store_true",
+                 help="request interactive xterm session from queue")
+
+    og.add_argument("-r", "--no_std_redirect", action="store_true",
+                 help="disable stdout/stderr redirection")
+
+    og.add_argument("-g", "--generate_only", action="store_true",
+                    help="only generate a LoadLeveler file, do nothing else")
+
+    ### LoadLeveler Options
+    og = parser.add_argument_group("LoadLeveler")
+    og.add_argument('--no_notify', action="store_true",
+                 help="do not send a notification email when job completes")
+
+    og.add_argument("--prefix", type=str,
+                 help='prefix for output files (only meaningful if no_std_redirect is enabled')
+    og.add_argument("-j", "--job_name", type=str,
+                 help="job_name as passed to LoadLeveler")
+
+    og.add_argument('-t', "--wall_time", type=str,
+                 help="job wall_time as passed to LoadLeveler")
+
+    og.add_argument('-c', "--ll_class", type=str,
+                 help="job class as passed to LoadLeveler")
+      
+    og.add_argument("-a", "--account", type=str,
+                 help="account number to charge")
+
+    og.add_argument("-p", "--partition_size", type=int, 
+                  help="number of nodes to request")
+
+    ### MPI Options
+    og = parser.add_argument_group("MPI")
+    og.add_argument("-n", "--np", type=int,
+                 help="number of MPI processes to request")
+
+    ### BGP-specific
+    if host_arch == 'ppc64':
+        og.add_argument("-m", "--mode", type=str,
+                      help="MPI mode to use (e.g. VN, DUAL, SMP)")
+
+        og.add_argument("--map", type=str, dest='bg_map',
+                      help="mapping of logical MPI processes to physical nodes/cores (e.g. XYZT, TXYZ, ...)")
+
+    return parser
+
+def get_file_config(host_arch):
+    # check /opt/share/ksl/system/config/$arch/kslrun.py, ~/.kslrun.py, ./.kslrun.py, and KSL_RUN_CONFIG
+    import configparser
+    config = configparser.ConfigParser()
+
+    sys_file = '/opt/share/ksl/system/config/%s/kslrun.ini' % host_arch
+    with open(sys_file, 'r') as config_file:
+        config.read_file(config_file)
+    
+    home_file = os.path.expanduser('~/.kslrun.ini')
+    here_file = '.kslrun.ini'
+    environ_file = ''
+    if 'KSL_RUN_CONFIG' in os.environ:
+        if os.path.isfile(os.environ['KSL_RUN_CONFIG']):
+            environ_file = os.environ['KSL_RUN_CONFIG']
+        else:
+            raise Exception("KSL_RUN_CONFIG environment variable specified but does not point to a file")
+
+    config.read([home_file, here_file, environ_file])
+
+    return config.items('kslrun')
+
 def cleanup(options, logger, tempdir):
     if options.debug:
         logger.debug("not deleting temporary working directory: " + tempdir)
     else:
         logger.info("deleting temporary files")
         shutil.rmtree(tempdir)
-    if options.debug or options.keep_ll_file:
-        logger.debug("not deleting ksl_submit.ll")
+    if options.debug or options.generate_only:
+        logger.debug("not deleting %s_submit.ll" % options.job_name)
     else:
         try:
-            os.remove('ksl_submit.ll')
+            os.remove('%s_submit.ll' % options.job_name)
         except:
             pass
             
@@ -297,10 +294,10 @@ def handle_output(job_poll, job_out_pipe, job_err_pipe):
 def setup_ll_file(options, host_arch, ll_dict, tempdir):
     logger = logging.getLogger('ksl_srun')
     logger.debug(ll_dict)
-    if options.keep_ll_file or options.debug:
-        ll_filename = "./ksl_submit.ll"
+    if options.debug or options.generate_only:
+        ll_filename = "./%s_submit.ll" % options.job_name
     else:
-        ll_filename = os.path.join(tempdir, "ksl_submit.ll")
+        ll_filename = os.path.join(tempdir, "$%s_submit.ll" % options.job_name)
 
     ll_file = open(ll_filename, 'w')
 
@@ -315,7 +312,7 @@ def setup_ll_file(options, host_arch, ll_dict, tempdir):
 
     ll_file.write(ll_file_contents)        
     logger.debug(ll_file_contents)
-    logger.debug("written to ksl_submit.ll")
+    logger.debug("written to %s_submit.ll" % options.job_name)
     ll_file.close()
 
     return ll_filename
@@ -334,22 +331,22 @@ def call_command(command):
 if __name__ == "__main__":
     try:
         main()
-    except SystemExit, e:
+    except SystemExit:
         raise
-    except KeyboardInterrupt, e:
-        print """
+    except KeyboardInterrupt:
+        print("""
 ================================================================================
 ||                           *Interrupted by user*                            ||
 ================================================================================
-"""
+""")
         raise
     except:
-        print """
+        print("""
 ================================================================================
 ||           *There was some sort of error running the script*                ||
 ||       Please report to Aron Ahmadia <aron.ahmadia@kaust.edu.sa>            ||
 ================================================================================
 
 Error stack follows
-"""
+""")
         raise 

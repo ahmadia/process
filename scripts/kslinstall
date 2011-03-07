@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os, sys, shutil, subprocess, logging, string, optparse, cfgparse
 import ksl.process, logging.handlers
@@ -30,7 +30,7 @@ def main():
                 variant.install_module()
             close_logs(variant_logs)
 
-        except Exception, err:
+        except Exception as err:
             log = logging.getLogger('ksl.installer')
             log.error('error during install of variant %s: %s' % (variant.target_arch+variant.tag, err))
             close_logs(variant_logs)
@@ -147,7 +147,7 @@ def get_options():
     (options, args) = c.parse(o)
 
     if options.version:
-        print "kslinstall: ",ksl.process.__version__
+        print("kslinstall: "+ksl.process.__version__)
         sys.exit(0)
 
     if options.interactive:
@@ -297,22 +297,22 @@ def parse_install_file(options, args):
 if __name__ == "__main__":
     try:
         main()
-    except SystemExit, e:
+    except SystemExit as e:
         raise
-    except KeyboardInterrupt, e:
-        print """
+    except KeyboardInterrupt as e:
+        print("""
 ================================================================================
 ||                           *Interrupted by user*                            ||
 ================================================================================
-"""
+""")
         raise
     except:
-        print """
+        print("""
 ================================================================================
 ||           *There was some sort of error running the script*                ||
 ||       Please report to Aron Ahmadia <aron.ahmadia@kaust.edu.sa>            ||
 ================================================================================
 
 Error stack follows
-"""
+""")
         raise 
