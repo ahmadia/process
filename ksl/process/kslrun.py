@@ -285,7 +285,7 @@ def configure(host_arch, options):
     print("kslrun found these configuration files: \n"+"\n".join(found_files))
 
     print("\n~/.kslrun.ini provides global configuration, ./kslrun.ini is directory-level")
-    print("\nEnter g to configure ~/.kslrun.ini or l (default) to configure .kslrun.ini [g/L]")
+    print("\nEnter g to configure ~/.kslrun.ini or l (default) to configure .kslrun.ini g/[l]")
 
     file_choice = getch()
     
@@ -295,7 +295,7 @@ def configure(host_arch, options):
         new_file = '.kslrun.ini'
 
     if os.path.isfile(new_file):
-        print("Warning: %s already exists, are you sure you want to over-write? [Y/n?]" % new_file)
+        print("Warning: %s already exists, are you sure you want to over-write? [y]/n?" % new_file)
         overwrite = getch()
         if overwrite == 'n' or overwrite == 'N':
             return
@@ -307,7 +307,7 @@ def configure(host_arch, options):
     for name in config_keys:
         old_value = getattr(options,name)
         print("\n%s: %s" % (name, old_value))
-        print("Do you want to keep this value? [Y/n?]")
+        print("Do you want to keep this value? [y]/n?")
         keep_choice = getch()
 
         if keep_choice == 'n' or keep_choice == 'n':
