@@ -307,7 +307,7 @@ def configure(host_arch, options):
     for name in config_keys:
         old_value = getattr(options,name)
         print("\n%s: %s" % (name, old_value))
-        new_value = input("Enter a new value or press return to continue")
+        new_value = input("Enter a new value or press return to continue\n")
 
         if len(new_value) > 0:
             config_options[name] = new_value
