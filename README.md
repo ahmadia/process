@@ -15,6 +15,6 @@ are specific to our BlueGene/P+LoadLeveler Shaheen installation at
 KAUST Supercomputing Laboratories, but I am interested in helping
 migrate them to other environments.
 
-Please visit the website at http://bitbucket.org/ahmadia/process or
+Please visit the website at http://github.com/ahmadia/process or
 contact the author at aron@ahmadia.net with further questions.
 
