@@ -1,8 +1,5 @@
-#!/opt/share/ksl/python3/3.2/ppc64/bin/python3
-import sys
-sys.path.insert(0,'/opt/share/ksl/python3/3.2/ppc64/lib/python3.2')
-sys.path.insert(0,'/opt/share/ksl/python3/3.2/ppc64/lib/python3.2/site-packages')
-
+#!/usr/bin/env python3
+# -*- mode: Python; -*-
 
 from ksl.process import kslrun
 
