@@ -2,5 +2,6 @@
 # -*- mode: Python; -*-
 
 from ksl.process import kslrun
+from ksl.process import util
 
-kslrun.run()
+util.run_script(kslrun.main)

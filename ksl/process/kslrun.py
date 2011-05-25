@@ -3,6 +3,7 @@
 import os, re, sys, select, subprocess, logging, time, string
 import tempfile, shutil, inspect
 import ksl.process
+import ksl.process.util as util
 
 bgp_interactive_template = string.Template('''#!/usr/bin/env bash
 #
@@ -74,10 +75,12 @@ def main():
     host_arch = os.uname()[4]
 
     parser = build_parser(host_arch)
-    config_tuple = get_file_config(host_arch)
+    config_tuple = util.get_file_config(host_arch, 'kslrun')
     config_strings = ['--'+arg+'='+value for arg,value in config_tuple]
     file_options = parser.parse_args(config_strings)
     options = parser.parse_args(namespace=file_options)
+
+    util.setup_logging(options)
 
     if options.version:
         print("kslrun: "+ksl.process.__version__)
@@ -87,18 +90,7 @@ def main():
         configure(host_arch, options)
         return
 
-    if options.debug:
-        logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s %(levelname)s %(message)s')
-    elif options.verbose:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s %(levelname)s %(message)s')
-    else:
-        logging.basicConfig(level=logging.WARNING,
-                            format='%(asctime)s %(levelname)s %(message)s')
-
     logger = logging.getLogger('kslrun')
-
     logger.debug("options")
     logger.debug(options)
 
@@ -143,7 +135,13 @@ def main():
             return
         
         logger.info("submitting to LoadLeveler")
-        (llout, llerr) = call_command("llsubmit " + llfilename)
+
+        if options.dry_run:
+            util.call_command("llsubmit " + llfilename, options)
+            logger.info("Dry run -- returning")
+            return
+
+        (llout, llerr) = util.call_command("llsubmit " + llfilename, options)
         logger.info('llout: ' + str(llout))
         logger.info('llerr: ' + str(llerr))
 
@@ -196,7 +194,8 @@ def build_parser(host_arch):
                   help="print version string and exit")
     og.add_argument("-c", "--configure", action="store_true",
                     help="set up a configure file")
-
+    og.add_argument("--dry_run", action="store_true",
+                    help="perform a dry run (don't actually execute commands)")
     og.add_argument("-v", "--verbose", action="store_true", 
                  help="print informational status messages to stdout")
 
@@ -248,33 +247,6 @@ def build_parser(host_arch):
                       help="mapping of logical MPI processes to physical nodes/cores (e.g. XYZT, TXYZ, ...)")
 
     return parser
-
-def get_config_files(host_arch):
-    sys_file = '/opt/share/ksl/system/config/%s/kslrun.ini' % host_arch
-    
-    home_file = os.path.expanduser('~/.kslrun.ini')
-    here_file = '.kslrun.ini'
-    environ_file = ''
-    if 'KSL_RUN_CONFIG' in os.environ:
-        if os.path.isfile(os.environ['KSL_RUN_CONFIG']):
-            environ_file = os.environ['KSL_RUN_CONFIG']
-        else:
-            raise Exception("KSL_RUN_CONFIG environment variable specified but does not point to a file")
-    return (sys_file, home_file, here_file, environ_file)
-
-def get_file_config(host_arch):
-    # check /opt/share/ksl/system/config/$arch/kslrun.py, ~/.kslrun.py, ./.kslrun.py, and KSL_RUN_CONFIG
-    import configparser
-    config = configparser.ConfigParser()
-
-    (sys_file, home_file, here_file, environ_file) = get_config_files(host_arch)
-
-    with open(sys_file, 'r') as config_file:
-        config.read_file(config_file)
-
-    config.read([home_file, here_file, environ_file])
-
-    return config.items('kslrun')
 
 def configure(host_arch, options):
     (sys_file, home_file, here_file, environ_file) = get_config_files(host_arch)
@@ -341,7 +313,7 @@ def cleanup(llqid, options, logger, tempdir):
             logger.debug("not cancelling job: " + llqid)
         else:
             print("***\nattempting to cancel job: " + llqid + "\n***")
-            (llout, llerr) = call_command("llcancel " + llqid)
+            (llout, llerr) = util.call_command("llcancel " + llqid)
             logger.info(llout)
             
 def watch_hangup(job_done_name, llqid):
@@ -375,9 +347,6 @@ def setup_ll_file(options, host_arch, ll_dict, tempdir):
     else:
         ll_filename = os.path.join(tempdir, "%s_submit.ll" % options.job_name)
 
-    ll_file = open(ll_filename, 'w')
-    logger.info(ll_file)
-
     if host_arch == 'ppc64':
         if options.interactive:
             ll_file_contents = bgp_interactive_template.substitute(ll_dict)
@@ -388,12 +357,17 @@ def setup_ll_file(options, host_arch, ll_dict, tempdir):
         assert tpn in range(1,9), 'Invalid # tasks per node, %d!' % tpn
         ll_dict['tasks_per_node'] = int(tpn)
         ll_file_contents = x86_template.substitute(ll_dict)
-        
 
-    ll_file.write(ll_file_contents)        
+    logger.info(ll_filename)
     logger.info(ll_file_contents)
-    logger.info("written to %s_submit.ll" % options.job_name)
-    ll_file.close()
+
+    if options.dry_run:
+        logger.info("dry run - no file written to %s_submit.ll" % options.job_name)
+    else:
+        ll_file = open(ll_filename, 'w')
+        ll_file.write(ll_file_contents)        
+        ll_file.close()
+        logger.info("written to %s_submit.ll" % options.job_name)
 
     return ll_filename
 
@@ -402,46 +376,6 @@ def check_hangup(job_done_name):
     logger.debug("checking for hangup file " + job_done_name)
     return os.path.exists(job_done_name)
 
-def call_command(command):
-    process = subprocess.Popen(command.split(' '),
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    return process.communicate()
-
-def getch():
-    import sys, tty, termios
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(sys.stdin.fileno())
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return ch
 
 if __name__ == "__main__":
-    run()
-
-def run():
-    try:
-        main()
-    except SystemExit:
-        raise
-    except KeyboardInterrupt:
-        print("""
-================================================================================
-||                           *Interrupted by user*                            ||
-================================================================================
-""")
-        raise
-    except:
-        print("""
-================================================================================
-||           *There was some sort of error running the script*                ||
-||       Please report to Aron Ahmadia <aron.ahmadia@kaust.edu.sa>            ||
-================================================================================
-
-Error stack follows
-""")
-        raise 
-
+    util.run_script(main)
