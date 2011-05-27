@@ -100,6 +100,7 @@ def main():
         options.no_std_redirect = True
     elif options.command is '':
         print("Missing command argument to mpirun, e.g. kslrun ./a.out")
+        parser.print_usage()
         return
     try:
         llqid = None
@@ -183,7 +184,7 @@ def main():
 
 def build_parser(host_arch):
     import argparse
-    usage_str = "kslrun [optional arguments] command\nSee /opt/share/ksl/system/config/%s/kslrun.ini for default arguments\nkslrun %s" % (host_arch,ksl.process.__version__)
+    usage_str = "kslrun [options] command\nSee /opt/share/ksl/system/config/%s/kslrun.ini for default options" % (host_arch)
     parser = argparse.ArgumentParser(usage=usage_str)
 
     parser.add_argument('command', type=str, nargs='?', help='Command string to forward to mpirun', default='')

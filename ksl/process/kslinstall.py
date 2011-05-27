@@ -1,12 +1,32 @@
 import os, sys, shutil, subprocess, logging, string
 import ksl.process, logging.handlers
+import ksl.process.util as util
 from ksl.process.install.installer import installer
 from ksl.process.install.installer import getch
-from datetime import datetime
 
 def main():
-    (options, args) = get_options()
+    host_arch = os.uname()[4]
+    parser = build_parser(host_arch)
+
+    config_tuple = util.get_file_config(host_arch, 'kslinstall')
+    config_strings = ['--'+arg+'='+value for arg,value in config_tuple]
+    file_options = parser.parse_args(config_strings)
+    options = parser.parse_args(namespace=file_options)
+
     setup_installer_log(options)
+
+    if options.version:
+        print("kslinstall: "+ksl.process.__version__)
+        sys.exit(0)
+
+    if options.interactive:
+        options.verbose = True
+
+    if options.install_file is '':
+        print ("It appears you forgot to specify an install file!")
+        parser.print_usage()
+        return
+    
     installer_variants = parse_install_file(options, args)
     for variant in installer_variants:
         try:
@@ -36,124 +56,83 @@ def main():
             if options.errors_fatal:
                 raise
 
-def get_options():
-    host_arch = os.uname()[4]
-    usage_str = "kslinstall %s\nusage: kslinstall [options] install_file\nSee /opt/share/ksl/system/config/%s/kslinstall.py for default arguments" % (ksl.process.__version__,host_arch)
+def build_parser(host_arch):
+    import argparse
+    usage_str = "kslinstall [options] install_file\nSee /opt/share/ksl/system/config/%s/kslinstall.ini for default options" % (host_arch)
+    parser = argparse.ArgumentParser(usage=usage_str)
 
-    o = optparse.OptionParser(usage=usage_str)
-    c = cfgparse.ConfigParser(allow_py=True)
+    parser.add_argument('install_file', type=str, nargs='?', help='install_file specifying install', default='')
 
-    og = optparse.OptionGroup(o, "GENERAL")
-    og.add_option("--version",
+    og = parser.add_argument_group("General ")
+    
+    og.add_argument("--version",
                   action="store_true", default=False,
                   help="print version string and exit")
 
-    og.add_option("-v", "--verbose",
+    og.add_argument("-v", "--verbose",
                   action="store_true", 
                   help="print informational messages to stdout")
-    c.add_option('verbose')
 
-    og.add_option("-f", "--force",
-                  action="store_true", 
-                  help="clobber target directories and files")
-    c.add_option('force')
-
-    og.add_option("-k", "--keep_going",
+    og.add_argument("--dry_run", action="store_true",
+                    help="perform a dry run (don't actually execute commands)")
+    
+    og.add_argument("-f", "--force",
+                    action="store_true", 
+                    help="clobber target directories and files")
+    
+    og.add_argument("-k", "--keep_going",
                   action="store_false", dest="errors_fatal",
                   help="Do not abort if any variant builds fail")
-    c.add_option('errors_fatal')
     
-    og.add_option("-z", "--interactive",
+    og.add_argument("-z", "--interactive",
                   action="store_true", dest="interactive",
                   help="Pause for confirmation on each job step")
-    c.add_option('interactive')
     
-    og.add_option('-n', "--no_install",
+    og.add_argument('-n', "--no_install",
                  action="store_false", dest="do_install",
                  help="Skip build/install steps (install module files only)")
-    c.add_option('do_install')
     
-    og.add_option('-m', "--no_module",
+    og.add_argument('-m', "--no_module",
                  action="store_false", dest="do_module", 
                  help="Skip installing modulefiles (build/install steps only)")                      
-    c.add_option('do_module')
 
-    og.add_option("-c", "--module_cmd",
+    og.add_argument("-c", "--module_cmd",
                  action="store", dest="module_cmd",
                  help="module command")
-    c.add_option('module_cmd')
 
-    o.add_option_group(og)
-    
-    og = optparse.OptionGroup(o, "INPUT PATHS")
+    og = parser.add_argument_group("Input Paths ")
 
-    og.add_option("--source_paths",
-                      action="store", dest="source_paths",
+    og.add_argument("--source_paths",
+                      action="store", dest="source_paths", type=str,
                       help="source paths to search ")
-    c.add_option('source_paths')
 
-    og.add_option("--overlay_paths",
-                      action="store", dest="overlay_paths",
+    og.add_argument("--overlay_paths",
+                      action="store", dest="overlay_paths", type=str,
                       help="overlay paths to search")
-    c.add_option('overlay_paths')
     
-    og.add_option("--patch_paths",
-                      action="store", dest="patch_paths",
+    og.add_argument("--patch_paths",
+                      action="store", dest="patch_paths", type=str,
                       help="patch paths to search")
-    c.add_option('patch_paths')
 
-    og.add_option("-t", "--module_template",
-                  action="store", dest="module_template",
+    og.add_argument("-t", "--module_template",
+                  action="store", dest="module_template", type=str,
                   help="template module file ")
-    c.add_option('module_template')
 
-    o.add_option_group(og)
+    og = parser.add_argument_group("Output Paths ")
     
-    og = optparse.OptionGroup(o, "OUTPUT PATHS")
-
-    og.add_option("-b", "--build_dir",
-                  action="store", dest="build_dir", 
+    og.add_argument("-b", "--build_dir",
+                  action="store", dest="build_dir", type=str,
                   help="working directory for builds")
-    c.add_option('build_dir')
 
-    og.add_option("--root_install_dir",
-                  action="store", dest="root_install_dir",
+    og.add_argument("--root_install_dir",
+                  action="store", dest="root_install_dir", type=str,
                   help="root directory to install packages to")
-    c.add_option('root_install_dir')
         
-    og.add_option("--root_module_dir",
-                  action="store", dest="root_module_dir",
+    og.add_argument("--root_module_dir",
+                  action="store", dest="root_module_dir", type=str,
                   help="root module directory to install modulefiles to")
-    c.add_option('root_module_dir')
 
-    o.add_option_group(og)
-
-    # check /opt/share/ksl/system/config/$arch/kslinstall.py, ~/.kslinstall.py, ./.kslinstall.py, and $KSL_INSTALL_CONFIG
-    sysfile = '/opt/share/ksl/system/config/%s/kslinstall.py' % host_arch
-    if os.path.isfile(sysfile):
-        c.add_file(sysfile)
-    homefile = os.path.expanduser('~/.kslinstall.py')
-    if os.path.isfile(homefile):
-        c.add_file(homefile)
-    herefile = '.kslinstall.py'
-    if os.path.isfile(herefile):
-        c.add_file(herefile)
-    if 'KSL_INSTALL_CONFIG' in os.environ:
-        if os.path.isfile(os.environ['KSL_INSTALL_CONFIG']):
-            c.add_file(os.environ['KSL_INSTALL_CONFIG'])
-    
-    (options, args) = c.parse(o)
-
-    if options.version:
-        print("kslinstall: "+ksl.process.__version__)
-        sys.exit(0)
-
-    if options.interactive:
-        options.verbose = True
-
-    if not args:
-        raise Exception("It appears you forgot to specify an install file!")
-    return (options, args)
+    return parser
 
 def setup_installer_log(options):
 
@@ -229,6 +208,8 @@ def clobber_dir(variant, clobber_dir, options):
     os.makedirs(clobber_dir)
 
 def setup_package_logs(variant):
+    from datetime import datetime
+
     root = '/opt/share/ksl/system/logs/installs'
     prefix = variant.name+'-'+variant.version+'-'+variant.release+'-'+str(datetime.date(datetime.today()))+"-"+str(datetime.time(datetime.now()))+'_'+variant.target_arch+variant.tag
 

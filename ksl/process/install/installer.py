@@ -2,7 +2,6 @@ import logging
 import os
 from os.path import exists, join, abspath, normpath
 from os import pathsep, chdir
-from string import split
 from string import Template
 
 class installer:
