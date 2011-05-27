@@ -1,15 +1,9 @@
-import zipfile
-import tarfile
 import logging
-import subprocess
 import os
-import mako
 from os.path import exists, join, abspath, normpath
 from os import pathsep, chdir
 from string import split
 from string import Template
-from inspect import getmembers
-from process.util import Bunch
 
 class installer:
     def __init__(self, data=None):
@@ -30,7 +24,7 @@ class installer:
             self.log.info('on step %d, %s' % (step_no, step))
 
             if options.interactive and not_going:
-                print "(s)kip, (d)o, (g)o, or (c)ancel?"
+                print("(s)kip, (d)o, (g)o, or (c)ancel?")
                 cmd = getch()
                 if cmd == 'c':
                     raise Exception('cancelled by user')
@@ -44,7 +38,7 @@ class installer:
                     else:
                         step_fun = step[0]
                         step_fun(self,*step[1:])
-                except Exception, err:
+                except Exception:
                     self.log.error('error on step %d, %s' % (step_no, step))
                     if options.errors_fatal:
                         raise
@@ -110,7 +104,8 @@ class installer:
             self.mod_magic = ''
 
         # oh man is this dirty        
-        module_data = template.substitute(dict(getmembers(self)))
+        import inspect 
+        module_data = template.substitute(dict(inspect.getmembers(self)))
         self.log.info("installing module file %s with contents:" % self.module_file)
         self.log.info(module_data)
 
@@ -154,6 +149,7 @@ class installer:
         self.modulesLoaded = True
     
     def unpack_source(self, extract=True):
+
         if not self.source:
             self.virtual_install = True
             return
@@ -169,8 +165,10 @@ class installer:
             self.log.info("acquiring working directory information from source file %s" % archive)
         
         if 'tar' in archive:
+            import tarfile
             self.working_dir = self.unpack(archive, tarfile.open, build_dir, extract)
         elif 'zip' in archive:
+            import zipfile
             self.working_dir = self.unpack(archive, zipfile.open, build_dir, extract)
         else:
             raise Exception('unrecognized install source archive format: %s' % archive)
@@ -232,7 +230,9 @@ class installer:
             log = logging.getLogger('ksl.installer.package.%s' % log_file)
         else:
             log = self.log
+
         log.info(command)
+        import subprocess
         p = subprocess.Popen(command, shell=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
@@ -256,6 +256,8 @@ class installer:
             log = self.log
         log.info('executing templated shell command')
         log.info(command_template.template)
+
+        import subprocess
         command = command_template.substitute(vars(self))
         log.info(command)
         p = subprocess.Popen(command, shell=True,
@@ -295,7 +297,7 @@ class installer:
         self.base_dir = os.getcwd()
         try:
             chdir(self.working_dir)
-        except Exception, err:
+        except Exception:
             self.unpack_source(extract=False)
             chdir(self.working_dir)
         self.log.info('changed directory to %s', self.working_dir)
@@ -307,6 +309,8 @@ class installer:
         self.log.info('changed directory to %s', self.base_dir)
 
     def module(self, module_args):
+        import subprocess
+
         p = subprocess.Popen('%s python %s' % (self.module_cmd,module_args),
                              shell=True, stdout=subprocess.PIPE ,stderr=subprocess.STDOUT)
         (commands, ignore) = p.communicate()
@@ -316,8 +320,8 @@ class installer:
             self.log.error(err_msg)
             raise Exception(err_msg)
         try:
-            exec commands
-        except Exception,err:
+            exec(commands)
+        except Exception:
             err_msg = "Error issuing module command: %s\n%s" % (module_args, commands)
             self.log.error(err_msg)
             raise Exception(err_msg)
@@ -364,7 +368,7 @@ class installer:
             u.close()
             return join(abspath(build_dir),subdir)
         
-        except Exception, err:
+        except Exception:
             self.log.error('error during unpack: %s', err)
             raise
 
