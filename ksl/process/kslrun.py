@@ -16,7 +16,6 @@ bgp_interactive_template = string.Template('''#!/usr/bin/env bash
 # @ notification        = ${notification}
 # @ bg_size             = ${partition_size}
 # @ cluster_list        = bgp
-# @ class               = ${ll_class}
 # @ account_no          = ${account}
 
 # @ queue
@@ -35,7 +34,6 @@ bgp_template = string.Template('''#!/usr/bin/env bash
 # @ notification        = ${notification}
 # @ bg_size             = ${partition_size}
 # @ cluster_list        = bgp
-# @ class               = ${ll_class}
 # @ account_no          = ${account}
 
 # @ queue
@@ -57,7 +55,6 @@ x86_template = string.Template('''#!/usr/bin/env bash
 # @ notification        = ${notification}
 # @ node                = ${partition_size}
 # @ tasks_per_node      = ${tasks_per_node}
-# @ class               = ${ll_class}
 # @ account_no          = ${account}
 
 # @ queue
@@ -225,9 +222,6 @@ def build_parser(host_arch):
     og.add_argument('-t', "--wall_time", type=str,
                  help="job wall_time as passed to LoadLeveler")
 
-    og.add_argument("--ll_class", type=str,
-                 help="job class as passed to LoadLeveler")
-      
     og.add_argument("-a", "--account", type=str,
                  help="account number to charge")
 
@@ -273,7 +267,7 @@ def configure(host_arch, options):
         if overwrite == 'n' or overwrite == 'N':
             return
 
-    config_keys = ['partition_size', 'account', 'job_name', 'wall_time', 'll_class', 'prefix', 'np', 'mode', 'map']
+    config_keys = ['partition_size', 'account', 'job_name', 'wall_time', 'prefix', 'np', 'mode', 'map']
 
     config_options = {}
 
