@@ -275,8 +275,7 @@ class installer:
             raise Exception(err_msg)
 
     def apply_templated_file(self, template_filename, out_filename, log_file):
-        """applies the os environment dictionary to the file specified in template_filename using the Mako templating
-        engine and writes the results to the file specified by out_filename"""
+        """applies the os environment dictionary to the file specified in template_filename using the Python3 string template engine and writes the results to the file specified by out_filename"""
         
         if log_file is not '':
             log = logging.getLogger('ksl.installer.package.%s' % log_file)
@@ -284,11 +283,20 @@ class installer:
             log = self.log
         log.info('applying local environment variables to template file %s to produce %s' %
                  (template_in, file_out))
-        makoplate = mako.template.Template(filename=template_filename)
-        outfile = open(out_filename)        
-        context = mako.runtime.Context(outfile, )
-        makoplate.render_context(context)
-        outfile.close()
+
+        with open(template_filename,'r') as template_file:
+            from string import Template
+            template = Template(template_file.read())
+
+        # powerful access to all of the local and system environment variables, higher precedence to local
+        environ_dict = dict()
+        import os
+        environ_dict.update(dict(os.environ))
+        environ_dict.update(vars(self))
+        template_out = template.substitute(environ_dict)
+
+        with open(out_filename,'w') as out_file:
+            out_file.write(template_out)
 
     def rebase(self):
         if self.virtual_install:
