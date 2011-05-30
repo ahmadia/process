@@ -26,7 +26,7 @@ def main():
         parser.print_usage()
         return
     
-    installer_variants = parse_install_file(options, args)
+    installer_variants = parse_install_file(options)
     for variant in installer_variants:
         try:
             variant_logs = []
@@ -47,7 +47,7 @@ def main():
                 variant.install_module()
             close_logs(variant_logs)
 
-        except Exception:
+        except Exception as err:
             log = logging.getLogger('ksl.installer')
             log.error('error during install of variant %s: %s' % (variant.target_arch+variant.tag, err))
             close_logs(variant_logs)
@@ -251,16 +251,17 @@ def close_logs(logs):
         logging.getLogger(logname).removeHandler(handle)
     return
 
-def parse_install_file(options, args):
+def parse_install_file(options):
     log = logging.getLogger('ksl.installer')
-    
-    installfile = string.join(args)
-    if not os.path.exists(installfile):
-        raise Exception("couldn't locate install file: %s" % installfile)
 
-    log.info("parsing install file %s" % installfile)
+    install_file = options.install_file
+    if not os.path.exists(install_file):
+        raise Exception("couldn't locate install file: %s" % install_file)
 
-    execfile(installfile,globals())
+    log.info("parsing install file %s" % install_file)
+
+    exec(compile(open(install_file).read(), install_file, 'exec'), globals())
+
     for variant in variants:
         variant.root_install_dir = options.root_install_dir
         variant.source_paths = options.source_paths
