@@ -1,0 +1,4 @@
+include *.txt *.md
+recursive-include ksl/process/install/examples *
+recursive-include ksl/process/system *
+recursive-include ksl/process/test * 
