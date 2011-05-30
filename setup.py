@@ -3,9 +3,6 @@
 from setuptools import setup
 import os
 
-def get_files(dir):
-    return [os.path.join(dir,_file) for _file in os.listdir(dir) if os.path.isfile(os.path.join(dir,_file))]
-
 setup(name='process',
       install_requires=['distribute']
       version='0.2.2',
