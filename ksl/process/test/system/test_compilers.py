@@ -59,7 +59,7 @@ def module_cmd(module_args):
         sys.stderr.write(commands)
         raise BuildError("unexpected failure issuing module command: %s" % module_args)
 
-    exec commands
+    exec(commands)
 
 def build_it(build_info, build_command):
 

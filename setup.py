@@ -4,7 +4,7 @@ from setuptools import setup
 import os
 
 setup(name='process',
-      install_requires=['distribute']
+      install_requires=['distribute'],
       version='0.2.2',
       description='Automation tools for high performance computing environments',
       author='Aron Ahmadia',

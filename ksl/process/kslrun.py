@@ -71,7 +71,7 @@ def main():
     # mode depends on if we are running on neser or shaheen
     host_arch = os.uname()[4]
 
-    parser = build_parser(host_arch)
+    parser = build_parser(host_arch, 'kslrun')
     config_tuple = util.get_file_config(host_arch, 'kslrun')
     config_strings = ['--'+arg+'='+value for arg,value in config_tuple]
     file_options = parser.parse_args(config_strings)
@@ -179,9 +179,10 @@ def main():
         raise
     cleanup(None, options, logger, tempdir)
 
-def build_parser(host_arch):
+def build_parser(host_arch, script_name):
     import argparse
-    usage_str = "kslrun [options] command\nSee /opt/share/ksl/system/config/%s/kslrun.ini for default options" % (host_arch)
+    sys_file = util.get_sys_file(host_arch, script_name)
+    usage_str = "kslrun [options] command\nSee %s for default options" % (sys_file)
     parser = argparse.ArgumentParser(usage=usage_str)
 
     parser.add_argument('command', type=str, nargs='?', help='Command string to forward to mpirun', default='')

@@ -16,9 +16,17 @@ def get_file_config(host_arch, script_name):
         raise
     return script_config
 
+def get_sys_file(host_arch, script_name):
+    import os
+    self_filepath = os.path.abspath(__file__)
+    self_path, self_file = os.path.split(self_filepath)
+    sys_file = os.path.join(self_path, 'system', 'config', host_arch, '%s.ini' % (script_name))
+    return sys_file
+
 def get_config_files(host_arch, script_name):
     import os
-    sys_file = '/opt/share/ksl/system/config/%s/%s.ini' % (host_arch, script_name)
+
+    sys_file = get_sys_file(host_arch, script_name)
     environ_var = 'KSL_' + script_name.upper().split('KSL')[1] + '_CONFIG'
     home_file = os.path.expanduser('~/.%s.ini' % script_name)
     here_file = '.%s.ini' % script_name

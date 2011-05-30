@@ -6,8 +6,7 @@ from ksl.process.install.installer import getch
 
 def main():
     host_arch = os.uname()[4]
-    parser = build_parser(host_arch)
-
+    parser = build_parser(host_arch, 'kslinstall')
     config_tuple = util.get_file_config(host_arch, 'kslinstall')
     config_strings = ['--'+arg+'='+value for arg,value in config_tuple]
     file_options = parser.parse_args(config_strings)
@@ -56,9 +55,10 @@ def main():
             if options.errors_fatal:
                 raise
 
-def build_parser(host_arch):
+def build_parser(host_arch, script_name):
     import argparse
-    usage_str = "kslinstall [options] install_file\nSee /opt/share/ksl/system/config/%s/kslinstall.ini for default options" % (host_arch)
+    sys_file = util.get_sys_file(host_arch, script_name)
+    usage_str = "kslinstall [options] install_file\nSee %s for default options" % (sys_file)
     parser = argparse.ArgumentParser(usage=usage_str)
 
     parser.add_argument('install_file', type=str, nargs='?', help='install_file specifying install', default='')
