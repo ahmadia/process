@@ -17,6 +17,7 @@ bgp_interactive_template = string.Template('''#!/usr/bin/env bash
 # @ bg_size             = ${partition_size}
 # @ cluster_list        = bgp
 # @ account_no          = ${account}
+# @ requirements        = (Machine == "${hostname}-a.shaheen.kaust.edu.sa")
 
 # @ queue
 
@@ -158,11 +159,7 @@ def main():
         
         longllqid = str(llout).split(' ')[1]
 
-        if host_arch == 'ppc64':
-            fen = 'fen1-a'
-        else:
-            fen = 'cn96'
-        assert ('%s.shaheen.kaust.edu.sa' % fen) in longllqid, "Unable to determine llq job id from output, %s" % llout
+        assert ('shaheen.kaust.edu.sa') in longllqid, "Unable to determine llq job id from output, %s" % llout
 
         llqid = longllqid.replace("shaheen.kaust.edu.sa.","") + ".0"
         logger.info('identified job as ' + llqid)
@@ -245,7 +242,7 @@ def build_parser(host_arch, script_name):
     return parser
 
 def configure(host_arch, options):
-    (sys_file, home_file, here_file, environ_file) = get_config_files(host_arch)
+    (sys_file, home_file, here_file, environ_file) = util.get_config_files(host_arch, 'kslrun')
 
     print("kslrun: configuring")
 
@@ -255,7 +252,7 @@ def configure(host_arch, options):
     print("\n~/.kslrun.ini provides global configuration, ./kslrun.ini is directory-level")
     print("\nEnter g to configure ~/.kslrun.ini or l (default) to configure .kslrun.ini g/[l]")
 
-    file_choice = getch()
+    file_choice = util.getch()
     
     if file_choice == 'g' or file_choice == 'G':
         new_file = os.path.expanduser('~/.kslrun.ini')
@@ -342,6 +339,9 @@ def setup_ll_file(options, host_arch, ll_dict, tempdir):
         ll_filename = "./%s_submit.ll" % options.job_name
     else:
         ll_filename = os.path.join(tempdir, "%s_submit.ll" % options.job_name)
+
+    import socket
+    ll_dict['hostname'] = socket.gethostname() 
 
     if host_arch == 'ppc64':
         if options.interactive:

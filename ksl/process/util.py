@@ -39,6 +39,7 @@ def get_config_files(host_arch, script_name):
     return (sys_file, home_file, here_file, environ_file)
 
 def call_command(command, options):
+    import subprocess
     if options.dry_run:
         print(command)
         return
